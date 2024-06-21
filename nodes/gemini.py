@@ -29,3 +29,9 @@ class GeminiNode(Node):
             "response": response.text
         }
 
+    def can_execute(self, inputs: dict) -> bool:
+        for input_key in self.inputs:
+            if input_key not in inputs:
+                return False
+        return True
+

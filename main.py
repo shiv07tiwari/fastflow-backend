@@ -1,12 +1,26 @@
-import asyncio
-from typing import Any
-
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from pydantic import BaseModel
 
 from services.database import DataBase
 
 app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 database: DataBase = DataBase()
 
 
@@ -36,3 +50,13 @@ async def run_workflow(request: WorkflowRunRequest):
     return {
         "response": "success"
     }
+
+@app.get("/workflow/{workflow_id}")
+async def get_workflow(workflow_id: str):
+    """
+    Get a workflow
+    :param workflow_id: str
+    :return:  Response
+    """
+    workflow = database.fetch_workflow(workflow_id)
+    return workflow.dict()
