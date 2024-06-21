@@ -33,3 +33,6 @@ class Node(BaseModel):
 
     def execute(self, *args, **kwargs):
         raise NotImplementedError()
+
+    def can_execute(self, *args, **kwargs):
+        raise NotImplementedError()

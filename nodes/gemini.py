@@ -12,7 +12,7 @@ class GeminiNode(Node):
             node_type=NodeType.AI,
             is_active=True,
             inputs=["prompt", "stream"],
-            outputs=["response", "tokens"],
+            outputs=["response"],
             **kwargs
         )
 
@@ -28,4 +28,10 @@ class GeminiNode(Node):
         return {
             "response": response.text
         }
+
+    def can_execute(self, inputs: dict) -> bool:
+        for input_key in self.inputs:
+            if input_key not in inputs:
+                return False
+        return True
 

@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict
 from pydantic import BaseModel
-from nodes.workflow_node import WorkFlowNode
+from workflows.workflow_node import WorkFlowNode
 
 
 def are_all_inputs_ready_for_node(node: WorkFlowNode):
@@ -97,7 +97,7 @@ class WorkflowSchema(BaseModel):
             target_node = self.get_node(node_id)
             target_node.input[input_handle] = edge_output
 
-            if are_all_inputs_ready_for_node(target_node):
+            if target_node.node.can_execute(target_node.input):
                 await self.execute_node(node_id, visited, target_node.input)
 
     async def execute(self):
@@ -109,5 +109,5 @@ class WorkflowSchema(BaseModel):
         print("Adjacency List:", self.adj_list)
         visited = set()
         start_nodes = self.get_start_nodes()
-        if start_nodes:
-            await self.execute_node(start_nodes[0], visited)
+        for start_node in start_nodes:
+                await self.execute_node(start_node, visited)
