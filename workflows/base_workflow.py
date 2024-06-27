@@ -1,10 +1,13 @@
 from typing import List, Optional, Dict
 from pydantic import BaseModel
+
+from databases.repository.node import NodeRepository
+from databases.repository.workflow_node import WorkflowNodeRepository
 from workflows.workflow_node import WorkFlowNode
 
 
 def are_all_inputs_ready_for_node(node: WorkFlowNode):
-    root_node = node.node
+    root_node = node.get_node()
     for inputs in root_node.inputs:
         if inputs not in node.input.keys():
             return False
@@ -17,7 +20,7 @@ class WorkflowSchema(BaseModel):
     name: str
     description: Optional[str] = None
     owner: str
-    nodes: Dict[str, WorkFlowNode] = {}  # Store individual nodes
+    nodes: List[str] = {}  # Store individual nodes
     edges: List[Dict[str, str]] = []  # Store edges (source, target, sourceHandle)
     adj_list: Dict[str, List[Dict[str, str]]] = {}  # Store adjacency list with handles
 
@@ -26,13 +29,13 @@ class WorkflowSchema(BaseModel):
 
     def add_nodes(self, nodes: List[WorkFlowNode]):
         for node in nodes:
-            self.nodes[node.id] = node
+            self.nodes.append(node.id)
 
     def add_edges(self, edges: List[Dict[str, str]]):
         self.edges = edges or []
 
     def get_node(self, id: str) -> Optional[WorkFlowNode]:
-        return self.nodes.get(id)
+        return
 
     def get_start_nodes(self) -> List[str]:
         all_nodes = set(self.adj_list.keys())
@@ -44,8 +47,8 @@ class WorkflowSchema(BaseModel):
         start_nodes = all_nodes - target_nodes
         return list(start_nodes)
 
-    def _create_adjacency_list(self):
-        adj_list = {node_id: [] for node_id in self.nodes}
+    def _create_adjacency_list(self, workflow_nodes: List[WorkFlowNode]):
+        adj_list = {node.id: [] for node in workflow_nodes}
         for edge in self.edges:
             source = edge['source']
             target = edge['target']
@@ -62,14 +65,14 @@ class WorkflowSchema(BaseModel):
     async def execute_node(self, node_id: str, visited: set, input_data: dict | None = None):
         if node_id not in visited:
             # Get the current node
-            workflow_node = self.get_node(node_id)
+            workflow_node = WorkflowNodeRepository().fetch_by_id(node_id)
             inputs = workflow_node.input  # Assuming WorkFlowNode has an input property
 
             # Update the inputs with the input_data if any
             if input_data:
                 inputs.update(input_data)
 
-            root_node = workflow_node.node  # Assuming WorkFlowNode has a node property
+            root_node = workflow_node.get_node()  # Assuming WorkFlowNode has a node property
             print(f"Executing node: {node_id}")
             print(f"Inputs: {inputs}")
 
@@ -94,10 +97,10 @@ class WorkflowSchema(BaseModel):
         # Get or create the input storage for the neighbor node
         print("Processing: ", node_id in visited, "", edge_output)
         if node_id not in visited:
-            target_node = self.get_node(node_id)
+            target_node = WorkflowNodeRepository().fetch_by_id(node_id)
             target_node.input[input_handle] = edge_output
 
-            if target_node.node.can_execute(target_node.input):
+            if target_node.get_node().can_execute(target_node.input):
                 await self.execute_node(node_id, visited, target_node.input)
 
     async def execute(self):
@@ -105,9 +108,14 @@ class WorkflowSchema(BaseModel):
         DFS traversal of the workflow graph
         :return:
         """
-        self._create_adjacency_list()
+        repo = WorkflowNodeRepository()
+        workflow_nodes = repo.fetch_all_by_workflow_id(self.id)
+        self._create_adjacency_list(workflow_nodes)
         print("Adjacency List:", self.adj_list)
         visited = set()
         start_nodes = self.get_start_nodes()
         for start_node in start_nodes:
-                await self.execute_node(start_node, visited)
+            await self.execute_node(start_node, visited)
+
+    def to_dict(self) -> dict:
+        return self.__dict__

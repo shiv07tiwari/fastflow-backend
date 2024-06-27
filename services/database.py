@@ -20,14 +20,14 @@ class DataBase:
             name="Gemini Demo Workflow",
             owner="admin",
             edges=[],
-            nodes={},
+            nodes=[],
             description="This is a demo workflow for Gemini",
         )
 
         self.gemini_workflow_node = WorkFlowNode(
             id="1",
             workflow=self.gemini_workflow.id,
-            node=self.gemini_node,
+            node=self.gemini_node.id,
             input={"prompt": "Return only the official website URL of Instawork, including HTTPS. It should be a valid URL."},
             output={},
         )
@@ -41,7 +41,7 @@ class DataBase:
         self.scrape_workflow_node = WorkFlowNode(
             id="3",
             workflow=self.gemini_workflow.id,
-            node=self.web_scrape_node,
+            node=self.web_scrape_node.id,
             input={},
             output={},
         )

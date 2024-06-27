@@ -1,23 +1,28 @@
 from pydantic import Field
 
 from nodes.base_node import Node, NodeType
+from nodes.constants import NodeModelTypes
 
 
 class CombineTextNode(Node):
     total_inputs_to_combine: int = Field(default=2)
 
     def __init__(self, **kwargs):
-        super().__init__(
-            id='combine_text',
-            name="Combine Text",
-            icon_url="https://cdn-icons-png.flaticon.com/512/2921/2921914.png",
-            description="Combine multiple text nodes into one",
-            node_type=NodeType.JOIN,
-            is_active=True,
-            inputs=["text"],
-            outputs=["combined_text"],
-            **kwargs
-        )
+        if kwargs:
+            super().__init__(**kwargs)
+        else:
+            super().__init__(
+                id='combine_text',
+                name="Combine Text",
+                icon_url="https://cdn-icons-png.flaticon.com/512/2921/2921914.png",
+                description="Combine multiple text nodes into one",
+                node_type=NodeType.JOIN.value,
+                is_active=True,
+                inputs=["text"],
+                outputs=["combined_text"],
+                workflow_node_type=NodeModelTypes.CombineText,
+                **kwargs
+            )
         self.total_inputs_to_combine = kwargs.get("total_inputs_to_combine", 2)
 
     async def execute(self, input: dict) -> dict:  # Corrected return type annotation

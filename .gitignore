@@ -1,4 +1,7 @@
 .idea/
 __pycache__/
 /fastflow
+
+.venv
 .env
+.python-version
