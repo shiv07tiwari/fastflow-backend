@@ -19,3 +19,5 @@ class QueryOperations:
 
 class QueryConstants:
     Node = "node"
+    Workflow = "workflow"
+    Id = "id"

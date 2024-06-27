@@ -33,8 +33,8 @@ class WorkflowSchema(BaseModel):
     def add_edges(self, edges: List[Dict[str, str]]):
         self.edges = edges or []
 
-    # def get_node(self, id: str) -> Optional[WorkFlowNode]:
-    #     return self.nodes.get(id)
+    def get_node(self, id: str) -> Optional[WorkFlowNode]:
+        return
 
     def get_start_nodes(self) -> List[str]:
         all_nodes = set(self.adj_list.keys())
@@ -64,7 +64,7 @@ class WorkflowSchema(BaseModel):
     async def execute_node(self, node_id: str, visited: set, input_data: dict | None = None):
         if node_id not in visited:
             # Get the current node
-            workflow_node = self.get_node(node_id)
+            workflow_node = WorkflowNodeRepository().fetch_by_id(node_id)
             inputs = workflow_node.input  # Assuming WorkFlowNode has an input property
 
             # Update the inputs with the input_data if any
@@ -96,7 +96,7 @@ class WorkflowSchema(BaseModel):
         # Get or create the input storage for the neighbor node
         print("Processing: ", node_id in visited, "", edge_output)
         if node_id not in visited:
-            target_node = self.get_node(node_id)
+            target_node = WorkflowNodeRepository().fetch_by_id(node_id)
             target_node.input[input_handle] = edge_output
 
             if target_node.node.can_execute(target_node.input):
@@ -108,13 +108,13 @@ class WorkflowSchema(BaseModel):
         :return:
         """
         repo = WorkflowNodeRepository()
-        workflow_nodes = repo.fetch_workflow_nodes_by_workflow_id(self.id)
+        workflow_nodes = repo.fetch_all_by_workflow_id(self.id)
         self._create_adjacency_list(workflow_nodes)
         print("Adjacency List:", self.adj_list)
         visited = set()
         start_nodes = self.get_start_nodes()
         for start_node in start_nodes:
-                await self.execute_node(start_node, visited)
+            await self.execute_node(start_node, visited)
 
     def to_dict(self) -> dict:
         return self.__dict__
