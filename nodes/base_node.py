@@ -36,3 +36,6 @@ class Node(BaseModel):
 
     def can_execute(self, *args, **kwargs):
         raise NotImplementedError()
+
+    def to_dict(self) -> dict:
+        return self.__dict__

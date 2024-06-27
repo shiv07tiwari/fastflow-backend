@@ -9,3 +9,6 @@ class WorkFlowNode(BaseModel):
     workflow: str | None = None
     input: dict | None = {}
     output: dict | None = {}
+
+    def to_dict(self) -> dict:
+        return self.__dict__

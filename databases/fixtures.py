@@ -39,7 +39,7 @@ class Fixtures:
                 output={},
             )
             combine_text_workflow_node = workflow_node.WorkFlowNode(
-                id="WN"+gemini_workflow.id+str(i+1),
+                id="WN"+gemini_workflow.id+str(i+2),
                 workflow=gemini_workflow.id,
                 node=combine_text_node.id,
                 input={},
@@ -69,7 +69,7 @@ class Fixtures:
             gemini_workflow.add_nodes(workflow_nodes)
             gemini_workflow.add_edges(edges)
 
-            self.db_controller.insert(Tables.WorkflowSchema, gemini_workflow.__dict__)
-            self.db_controller.insert(Tables.WorkFlowNode, gemini_workflow_node.__dict__)
-            self.db_controller.insert(Tables.WorkFlowNode, gemini_workflow_node_2.__dict__)
-            self.db_controller.insert(Tables.WorkFlowNode, combine_text_workflow_node.__dict__)
+            self.db_controller.insert(Tables.WorkflowSchema, gemini_workflow.to_dict(), document_id=gemini_workflow.id)
+            self.db_controller.insert(Tables.WorkFlowNode, gemini_workflow_node.to_dict(), document_id=gemini_workflow_node.id)
+            self.db_controller.insert(Tables.WorkFlowNode, gemini_workflow_node_2.to_dict(), document_id=gemini_workflow_node_2.id)
+            self.db_controller.insert(Tables.WorkFlowNode, combine_text_workflow_node.to_dict(), document_id=combine_text_workflow_node.id)

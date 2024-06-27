@@ -111,3 +111,6 @@ class WorkflowSchema(BaseModel):
         start_nodes = self.get_start_nodes()
         for start_node in start_nodes:
                 await self.execute_node(start_node, visited)
+
+    def to_dict(self) -> dict:
+        return self.__dict__
