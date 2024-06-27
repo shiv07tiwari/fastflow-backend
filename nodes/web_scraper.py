@@ -3,21 +3,27 @@ from fastapi.concurrency import run_in_threadpool
 
 from playwright.sync_api import sync_playwright
 
+from nodes.constants import NodeModelTypes
+
 CHROME_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"  # noqa: E501
 
 
 class WebScraperNode(Node):
     def __init__(self, **kwargs):
-        super().__init__(
-            id='web_scraper',
-            name="Web Scraper",
-            icon_url="https://cdn-icons-png.flaticon.com/512/2921/2921914.png",
-            description="Scrape a website",
-            node_type=NodeType.JOIN,
-            is_active=True,
-            inputs=["url"],
-            outputs=["response"],
-        )
+        if kwargs:
+            super().__init__(**kwargs)
+        else:
+            super().__init__(
+                id='web_scraper',
+                name="Web Scraper",
+                icon_url="https://cdn-icons-png.flaticon.com/512/2921/2921914.png",
+                description="Scrape a website",
+                node_type=NodeType.JOIN.value,
+                is_active=True,
+                inputs=["url"],
+                outputs=["response"],
+                workflow_node_type=NodeModelTypes.WebScraper,
+            )
 
     def _scrape_website_content(self, url: str) -> str | None:
         try:

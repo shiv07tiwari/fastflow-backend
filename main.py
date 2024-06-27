@@ -6,7 +6,10 @@ from dotenv import load_dotenv
 
 
 from databases.fixtures import Fixtures
+from databases.repository.workflow import WorkflowRepository
+from databases.repository.workflow_node import WorkflowNodeRepository
 from services.database import DataBase
+from workflows.base_workflow_dto import WorkflowResponseDTO
 
 app = FastAPI()
 
@@ -50,7 +53,7 @@ async def run_workflow(request: WorkflowRunRequest):
     """
     id = request.id
     # Fetch the workflow
-    workflow = database.fetch_workflow(id)
+    workflow = WorkflowRepository().fetch_by_id(id)
     await workflow.execute()
 
     return {
@@ -65,7 +68,11 @@ async def get_workflow(workflow_id: str):
     :param workflow_id: str
     :return:  Response
     """
-    workflow = database.fetch_workflow(workflow_id)
-    return workflow.dict()
+    workflow = WorkflowRepository().fetch_by_id(workflow_id).to_dict()
+
+    workflow_resp = WorkflowResponseDTO()
+    workflow_resp.__dict__.update(workflow)
+    workflow_resp.nodes = WorkflowNodeRepository().fetch_all_by_workflow_id(workflow_id)
+    return workflow_resp.to_dict()
 
 Fixtures().add_test_data(1)

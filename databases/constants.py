@@ -1,3 +1,7 @@
+from nodes import combine_text, user_input, gemini, web_scraper
+from nodes.constants import NodeModelTypes
+
+
 class Tables:
     WorkflowSchema = "workflow_schema"
     WorkFlowNode = "workflow_node"
@@ -21,3 +25,11 @@ class QueryConstants:
     Node = "node"
     Workflow = "workflow"
     Id = "id"
+
+
+NodeTypeClassMappings = {
+    NodeModelTypes.CombineText: combine_text.CombineTextNode,
+    NodeModelTypes.UserInput: user_input.UserInputNode,
+    NodeModelTypes.WebScraper: web_scraper.WebScraperNode,
+    NodeModelTypes.Gemini: gemini.GeminiNode,
+}

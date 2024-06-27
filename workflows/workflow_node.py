@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+from databases.repository.node import NodeRepository
 from nodes.base_node import Node
 
 
@@ -12,3 +13,7 @@ class WorkFlowNode(BaseModel):
 
     def to_dict(self) -> dict:
         return self.__dict__
+
+    def get_node(self):
+        repo = NodeRepository()
+        return repo.fetch_by_id(self.node)

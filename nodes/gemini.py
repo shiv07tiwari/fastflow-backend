@@ -1,20 +1,25 @@
 from nodes.base_node import Node, NodeType
+from nodes.constants import NodeModelTypes
 from services import GeminiService
 
 
 class GeminiNode(Node):
     def __init__(self, **kwargs):
-        super().__init__(
-            id='gemini',
-            name="Gemini",
-            icon_url="https://cdn-icons-png.flaticon.com/512/2921/2921914.png",
-            description="Generate a Response from Gemini AI",
-            node_type=NodeType.AI,
-            is_active=True,
-            inputs=["prompt", "stream"],
-            outputs=["response"],
-            **kwargs
-        )
+        if kwargs:
+            super().__init__(**kwargs)
+        else:
+            super().__init__(
+                id='gemini',
+                name="Gemini",
+                icon_url="https://cdn-icons-png.flaticon.com/512/2921/2921914.png",
+                description="Generate a Response from Gemini AI",
+                node_type=NodeType.AI.value,
+                is_active=True,
+                inputs=["prompt", "stream"],
+                outputs=["response"],
+                workflow_node_type=NodeModelTypes.Gemini,
+                **kwargs
+            )
 
     async def execute(self, input: dict) -> {}:
         service = GeminiService()

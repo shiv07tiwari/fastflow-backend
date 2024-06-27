@@ -69,6 +69,8 @@ class Fixtures:
             gemini_workflow.add_nodes(workflow_nodes)
             gemini_workflow.add_edges(edges)
 
+            self.db_controller.insert(Tables.Node, gemini_node.to_dict(), document_id=gemini_node.id)
+            self.db_controller.insert(Tables.Node, combine_text_node.to_dict(), document_id=combine_text_node.id)
             self.db_controller.insert(Tables.WorkflowSchema, gemini_workflow.to_dict(), document_id=gemini_workflow.id)
             self.db_controller.insert(Tables.WorkFlowNode, gemini_workflow_node.to_dict(), document_id=gemini_workflow_node.id)
             self.db_controller.insert(Tables.WorkFlowNode, gemini_workflow_node_2.to_dict(), document_id=gemini_workflow_node_2.id)

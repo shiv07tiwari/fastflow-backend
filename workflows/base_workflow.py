@@ -1,12 +1,13 @@
 from typing import List, Optional, Dict
 from pydantic import BaseModel
 
+from databases.repository.node import NodeRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
 from workflows.workflow_node import WorkFlowNode
 
 
 def are_all_inputs_ready_for_node(node: WorkFlowNode):
-    root_node = node.node
+    root_node = node.get_node()
     for inputs in root_node.inputs:
         if inputs not in node.input.keys():
             return False
@@ -47,7 +48,7 @@ class WorkflowSchema(BaseModel):
         return list(start_nodes)
 
     def _create_adjacency_list(self, workflow_nodes: List[WorkFlowNode]):
-        adj_list = {node_id: [] for node_id in workflow_nodes}
+        adj_list = {node.id: [] for node in workflow_nodes}
         for edge in self.edges:
             source = edge['source']
             target = edge['target']
@@ -71,7 +72,7 @@ class WorkflowSchema(BaseModel):
             if input_data:
                 inputs.update(input_data)
 
-            root_node = workflow_node.node  # Assuming WorkFlowNode has a node property
+            root_node = workflow_node.get_node()  # Assuming WorkFlowNode has a node property
             print(f"Executing node: {node_id}")
             print(f"Inputs: {inputs}")
 
@@ -99,7 +100,7 @@ class WorkflowSchema(BaseModel):
             target_node = WorkflowNodeRepository().fetch_by_id(node_id)
             target_node.input[input_handle] = edge_output
 
-            if target_node.node.can_execute(target_node.input):
+            if target_node.get_node().can_execute(target_node.input):
                 await self.execute_node(node_id, visited, target_node.input)
 
     async def execute(self):

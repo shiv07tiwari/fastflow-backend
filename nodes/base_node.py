@@ -27,9 +27,10 @@ class Node(BaseModel):
     created_at: str | None = None
     updated_at: str | None = None
     is_active: bool = True
-    node_type: NodeType
+    node_type: str
     inputs: List[str] = []
     outputs: List[str] = []
+    workflow_node_type: str
 
     def execute(self, *args, **kwargs):
         raise NotImplementedError()
