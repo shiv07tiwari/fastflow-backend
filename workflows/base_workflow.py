@@ -17,7 +17,7 @@ class WorkflowSchema(BaseModel):
     name: str
     description: Optional[str] = None
     owner: str
-    nodes: Dict[str, WorkFlowNode] = {}  # Store individual nodes
+    nodes: List[str] = {}  # Store individual nodes
     edges: List[Dict[str, str]] = []  # Store edges (source, target, sourceHandle)
     adj_list: Dict[str, List[Dict[str, str]]] = {}  # Store adjacency list with handles
 
@@ -26,13 +26,13 @@ class WorkflowSchema(BaseModel):
 
     def add_nodes(self, nodes: List[WorkFlowNode]):
         for node in nodes:
-            self.nodes[node.id] = node
+            self.nodes.append(node.id)
 
     def add_edges(self, edges: List[Dict[str, str]]):
         self.edges = edges or []
 
-    def get_node(self, id: str) -> Optional[WorkFlowNode]:
-        return self.nodes.get(id)
+    # def get_node(self, id: str) -> Optional[WorkFlowNode]:
+    #     return self.nodes.get(id)
 
     def get_start_nodes(self) -> List[str]:
         all_nodes = set(self.adj_list.keys())

@@ -15,28 +15,28 @@ class DataBase:
             name="Gemini Demo Workflow",
             owner="admin",
             edges=[],
-            nodes={},
+            nodes=[],
             description="This is a demo workflow for Gemini",
         )
 
         self.gemini_workflow_node = WorkFlowNode(
             id="1",
             workflow=self.gemini_workflow.id,
-            node=self.gemini_node,
+            node=self.gemini_node.id,
             input={"prompt": "Who is the highest run scorer in cricket?"},
             output={},
         )
         self.gemini_workflow_node_2 = WorkFlowNode(
             id="2",
             workflow=self.gemini_workflow.id,
-            node=self.gemini_node,
+            node=self.gemini_node.id,
             input={"prompt": "Who is the greatest captain in cricket?"},
             output={},
         )
         self.combine_text_workflow_node = WorkFlowNode(
             id="3",
             workflow=self.gemini_workflow.id,
-            node=self.combine_text_node,
+            node=self.combine_text_node.id,
             input={},
             output={},
         )

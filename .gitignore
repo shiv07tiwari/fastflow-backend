@@ -4,3 +4,6 @@ __pycache__/
 
 
 # How to remove a file after doing git add
+.venv
+.env
+.python-version

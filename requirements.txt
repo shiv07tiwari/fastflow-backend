@@ -1,0 +1,5 @@
+pydantic~=2.7.4
+fastapi~=0.111.0
+python-dotenv~=1.0.1
+google.generativeai
+firebase-admin==6.5.0

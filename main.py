@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel
 
+from databases.fixtures import Fixtures
 from services.database import DataBase
 
 app = FastAPI()
@@ -60,3 +61,5 @@ async def get_workflow(workflow_id: str):
     """
     workflow = database.fetch_workflow(workflow_id)
     return workflow.dict()
+
+Fixtures().add_test_data(1)
