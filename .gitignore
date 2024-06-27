@@ -1,6 +1,4 @@
 .idea/
 __pycache__/
 /fastflow
-
-
-# How to remove a file after doing git add
+.env
