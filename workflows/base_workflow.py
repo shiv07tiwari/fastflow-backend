@@ -1,5 +1,7 @@
 from typing import List, Optional, Dict
 from pydantic import BaseModel
+
+from databases.repository.workflow_node import WorkflowNodeRepository
 from workflows.workflow_node import WorkFlowNode
 
 
@@ -44,8 +46,8 @@ class WorkflowSchema(BaseModel):
         start_nodes = all_nodes - target_nodes
         return list(start_nodes)
 
-    def _create_adjacency_list(self):
-        adj_list = {node_id: [] for node_id in self.nodes}
+    def _create_adjacency_list(self, workflow_nodes: List[WorkFlowNode]):
+        adj_list = {node_id: [] for node_id in workflow_nodes}
         for edge in self.edges:
             source = edge['source']
             target = edge['target']
@@ -105,7 +107,9 @@ class WorkflowSchema(BaseModel):
         DFS traversal of the workflow graph
         :return:
         """
-        self._create_adjacency_list()
+        repo = WorkflowNodeRepository()
+        workflow_nodes = repo.fetch_workflow_nodes_by_workflow_id(self.id)
+        self._create_adjacency_list(workflow_nodes)
         print("Adjacency List:", self.adj_list)
         visited = set()
         start_nodes = self.get_start_nodes()

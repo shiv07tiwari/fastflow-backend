@@ -1,5 +1,9 @@
 import errors
 
+from google.cloud.firestore_v1.base_query import FieldFilter
+
+from databases.constants import QueryOperations
+
 
 class DatabaseController:
     def __init__(self, db):
@@ -25,3 +29,16 @@ class DatabaseController:
         if not data.exists:
             raise errors.GenericError(errors.NoRecordFound)
         return data.to_dict()
+
+    def query(self, table: str, key: str, op: str, value) -> list:
+        docs = self.db.collection(table).where(filter=FieldFilter(key, op, value)).stream()
+        query_results = []
+        for doc in docs:
+            query_results.append(doc.to_dict())
+        return query_results
+
+    def query_equal(self, table: str, key: str, value) -> list:
+        return self.query(table, key, QueryOperations.Equals, value)
+
+    def query_in(self, table: str, key: str, value) -> list:
+        return self.query(table, key, QueryOperations.In, value)
