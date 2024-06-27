@@ -2,11 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel
+from dotenv import load_dotenv
+
 
 from databases.fixtures import Fixtures
 from services.database import DataBase
 
 app = FastAPI()
+
+load_dotenv()
+
 
 origins = [
     "http://localhost",
@@ -51,6 +56,7 @@ async def run_workflow(request: WorkflowRunRequest):
     return {
         "response": "success"
     }
+
 
 @app.get("/workflow/{workflow_id}")
 async def get_workflow(workflow_id: str):

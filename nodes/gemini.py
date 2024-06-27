@@ -12,7 +12,7 @@ class GeminiNode(Node):
             node_type=NodeType.AI,
             is_active=True,
             inputs=["prompt", "stream"],
-            outputs=["response", "tokens"],
+            outputs=["response"],
             **kwargs
         )
 

@@ -2,8 +2,6 @@
 __pycache__/
 /fastflow
 
-
-# How to remove a file after doing git add
 .venv
 .env
 .python-version

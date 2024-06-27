@@ -1,10 +1,14 @@
+import os
 from concurrent.futures import ThreadPoolExecutor
 import google.generativeai as genai
 
 
 class GeminiService:
     def __init__(self):
-        genai.configure(api_key="AIzaSyDGtoaiEvjFgjsENXq6ZBaBmWvfWLoEHs0")
+        API_KEY = os.getenv("GEMINI_API_KEY", None)
+        if not API_KEY:
+            raise ValueError("GEMINI_API_KEY is not set")
+        genai.configure(api_key=API_KEY)
         self.model = genai.GenerativeModel('gemini-1.5-flash')
         self.executor = ThreadPoolExecutor(max_workers=10)  # Adjust the number of workers as needed
 

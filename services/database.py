@@ -1,14 +1,19 @@
 from nodes.combine_text import CombineTextNode
 from nodes.gemini import GeminiNode
+from nodes.web_scraper import WebScraperNode
 from workflows.workflow_node import WorkFlowNode
 from workflows.base_workflow import WorkflowSchema
 
 
 class DataBase:
+    """
+    This is a dummy database class that stores the workflows and nodes.
+    """
 
     def __init__(self):
         self.gemini_node = GeminiNode()
         self.combine_text_node = CombineTextNode()
+        self.web_scrape_node = WebScraperNode()
 
         self.gemini_workflow = WorkflowSchema(
             id="1",
@@ -23,42 +28,35 @@ class DataBase:
             id="1",
             workflow=self.gemini_workflow.id,
             node=self.gemini_node.id,
-            input={"prompt": "Who is the highest run scorer in cricket?"},
+            input={"prompt": "Return only the official website URL of Instawork, including HTTPS. It should be a valid URL."},
             output={},
         )
-        self.gemini_workflow_node_2 = WorkFlowNode(
-            id="2",
-            workflow=self.gemini_workflow.id,
-            node=self.gemini_node.id,
-            input={"prompt": "Who is the greatest captain in cricket?"},
-            output={},
-        )
-        self.combine_text_workflow_node = WorkFlowNode(
+        # self.gemini_workflow_node_2 = WorkFlowNode(
+        #     id="2",
+        #     workflow=self.gemini_workflow.id,
+        #     node=self.gemini_node,
+        #     input={"prompt": "Who is the greatest captain in cricket?"},
+        #     output={},
+        # )
+        self.scrape_workflow_node = WorkFlowNode(
             id="3",
             workflow=self.gemini_workflow.id,
-            node=self.combine_text_node.id,
+            node=self.web_scrape_node.id,
             input={},
             output={},
         )
         self.workflow_nodes = [
             self.gemini_workflow_node,
-            self.gemini_workflow_node_2,
-            self.combine_text_workflow_node
+            self.scrape_workflow_node,
         ]
 
         self.edges = [
             {
                 "id": "edge1",
                 "source": self.gemini_workflow_node.id,
-                "target": self.combine_text_workflow_node.id,
-                "inputHandle": "text-1",
+                "target": self.scrape_workflow_node.id,
+                "inputHandle": "url",
             },
-            {
-                "id": "edge2",
-                "source": self.gemini_workflow_node_2.id,
-                "target": self.combine_text_workflow_node.id,
-                "inputHandle": "text-2",
-            }
         ]
 
         self.gemini_workflow.add_nodes(self.workflow_nodes)

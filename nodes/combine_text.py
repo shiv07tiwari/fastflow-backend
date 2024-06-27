@@ -2,6 +2,7 @@ from pydantic import Field
 
 from nodes.base_node import Node, NodeType
 
+
 class CombineTextNode(Node):
     total_inputs_to_combine: int = Field(default=2)
 
