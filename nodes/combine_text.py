@@ -31,7 +31,7 @@ class CombineTextNode(Node):
             text = input.get(f"text-{i}")
             if text is not None:  # Ensure 'text' is not None
                 combined_text += text.strip() + " "  # Corrected 'trim()' to 'strip()'
-        return {"combined_text": combined_text.strip()}  # Remove trailing whitespace
+        return {"response": combined_text.strip()}  # Remove trailing whitespace
 
     def can_execute(self, inputs: dict) -> bool:
         return len(inputs) == self.total_inputs_to_combine

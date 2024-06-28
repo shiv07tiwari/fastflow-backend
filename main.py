@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from databases.fixtures import Fixtures
 from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
-from services.database import DataBase
+from services.workflow import WorkflowService
 from workflows.base_workflow_dto import WorkflowResponseDTO
 
 app = FastAPI()
@@ -30,9 +30,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-database: DataBase = DataBase()
-
-
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
@@ -51,11 +48,12 @@ async def run_workflow(request: WorkflowRunRequest):
 
     This currently only supports serial execution of the workflow
     """
-    id = request.id
-    # Fetch the workflow
-    workflow = WorkflowRepository().fetch_by_id(id)
-    await workflow.execute()
-
+    workflow_id = request.id
+    workflow = WorkflowRepository().fetch_by_id(workflow_id)
+    workflow_service = WorkflowService(
+        workflow=workflow,
+    )
+    await workflow_service.execute()
     return {
         "response": "success"
     }
@@ -68,11 +66,8 @@ async def get_workflow(workflow_id: str):
     :param workflow_id: str
     :return:  Response
     """
-    workflow = WorkflowRepository().fetch_by_id(workflow_id).to_dict()
-
-    workflow_resp = WorkflowResponseDTO()
-    workflow_resp.__dict__.update(workflow)
-    workflow_resp.nodes = WorkflowNodeRepository().fetch_all_by_workflow_id(workflow_id)
-    return workflow_resp.to_dict()
+    workflow = WorkflowRepository().fetch_by_id(workflow_id)
+    nodes = WorkflowNodeRepository().fetch_all_by_workflow_id(workflow_id)
+    return WorkflowResponseDTO.to_response(workflow, nodes)
 
 Fixtures().add_test_data(1)

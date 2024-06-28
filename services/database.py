@@ -59,7 +59,7 @@ class DataBase:
             },
         ]
 
-        self.gemini_workflow.add_nodes(self.workflow_nodes)
+        self.gemini_workflow.add_nodes_mapping(self.workflow_nodes)
         self.gemini_workflow.add_edges(self.edges)
 
     def fetch_workflow(self, workflow_id: str):

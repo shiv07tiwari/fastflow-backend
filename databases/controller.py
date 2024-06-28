@@ -14,11 +14,7 @@ class DatabaseController:
         if id is None:
             db_collection.add(data)
         else:
-            if db_collection.document(document_id).get().exists:
-                print("Entry already exists! DocumentId: {}".format(document_id))
-                return
-            else:
-                db_collection.document(document_id).set(data)
+            db_collection.document(document_id).set(data)
         print("Inserted data in table {}, Data: {}".format(table, data))
 
     def update(self, table: str, data: dict, document_id: str):
