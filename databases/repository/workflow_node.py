@@ -24,3 +24,7 @@ class WorkflowNodeRepository:
     def fetch_by_id(self, node_id) -> WorkFlowNode:
         node_dict = self.db_controller.get(self.table, node_id)
         return WorkFlowNode(**node_dict)
+
+    def update_node_input(self, node_id, input_data):
+        existing_data = self.fetch_by_id(node_id)
+        self.db_controller.update(self.table, node_id, input_data)

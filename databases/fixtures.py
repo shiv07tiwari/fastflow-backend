@@ -28,26 +28,35 @@ class Fixtures:
                 id="WN"+gemini_workflow.id+str(i),
                 workflow=gemini_workflow.id,
                 node=gemini_node.id,
-                input={"prompt": "Who is the highest run scorer in cricket?"},
+                input={"prompt": "Who is the highest run scorer in cricket? Give me the name only"},
                 output={},
             )
             gemini_workflow_node_2 = workflow_node.WorkFlowNode(
                 id="WN"+gemini_workflow.id+str(i+1),
                 workflow=gemini_workflow.id,
                 node=gemini_node.id,
-                input={"prompt": "Who is the greatest captain in cricket?"},
+                input={"prompt": "Who is the highest wicket taker in cricket? Give me the name only"},
+                output={},
+            )
+            gemini_workflow_node_3 = workflow_node.WorkFlowNode(
+                id="WN" + gemini_workflow.id + str(i + 2),
+                workflow=gemini_workflow.id,
+                node=gemini_node.id,
+                input={},
                 output={},
             )
             combine_text_workflow_node = workflow_node.WorkFlowNode(
-                id="WN"+gemini_workflow.id+str(i+2),
+                id="WN"+gemini_workflow.id+str(i+3),
                 workflow=gemini_workflow.id,
                 node=combine_text_node.id,
                 input={},
                 output={},
+                total_inputs_to_combine=2
             )
             workflow_nodes = [
                 gemini_workflow_node,
                 gemini_workflow_node_2,
+                gemini_workflow_node_3,
                 combine_text_workflow_node
             ]
 
@@ -63,6 +72,12 @@ class Fixtures:
                     "source": gemini_workflow_node_2.id,
                     "target": combine_text_workflow_node.id,
                     "inputHandle": "text-2",
+                },
+                {
+                    "id": "edge3",
+                    "source": combine_text_workflow_node.id,
+                    "target": gemini_workflow_node_3.id,
+                    "inputHandle": "prompt",
                 }
             ]
 
@@ -75,3 +90,4 @@ class Fixtures:
             self.db_controller.insert(Tables.WorkFlowNode, gemini_workflow_node.to_dict(), document_id=gemini_workflow_node.id)
             self.db_controller.insert(Tables.WorkFlowNode, gemini_workflow_node_2.to_dict(), document_id=gemini_workflow_node_2.id)
             self.db_controller.insert(Tables.WorkFlowNode, combine_text_workflow_node.to_dict(), document_id=combine_text_workflow_node.id)
+            self.db_controller.insert(Tables.WorkFlowNode, gemini_workflow_node_3.to_dict(), document_id=gemini_workflow_node_3.id)
