@@ -16,7 +16,7 @@ class NodeType(Enum):
     JOIN = "join"
 
 
-class Node(BaseModel):
+class BaseNode(BaseModel):
     """
     This is a single node in the workflow. Created by system.
     """

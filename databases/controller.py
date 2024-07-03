@@ -38,3 +38,25 @@ class DatabaseController:
 
     def query_in(self, table: str, key: str, value) -> list:
         return self.query(table, key, QueryOperations.In, value)
+
+    def clear_table(self, table: str):
+        """
+        Clears all entries from the specified table.
+
+        :param table: The name of the table to clear
+        """
+        batch_size = 100  # Firestore recommends deleting in batches
+        docs = self.db.collection(table).limit(batch_size).stream()
+        deleted = 0
+
+        for doc in docs:
+            doc.reference.delete()
+            deleted += 1
+
+        if deleted >= batch_size:
+            # If we have deleted a number of documents equal to the batch size,
+            # there might be more documents to delete, so we recursively call
+            # the function again
+            self.clear_table(table)
+
+        print(f"Cleared {deleted} documents from table {table}")

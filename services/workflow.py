@@ -48,18 +48,18 @@ class WorkflowService:
 
         if node_id not in visited:
             # Get the current node
-            workflow_node = self.node_mapping[node_id]
-            base_node = workflow_node.get_node()
-            inputs = workflow_node.input
+            node: WorkFlowNode = self.node_mapping[node_id]
+            base_node = node.get_node()
+            available_inputs = node.available_inputs
 
             if input_data:
-                inputs.update(input_data)
+                available_inputs.update(input_data)
 
             print(f"Executing node: {base_node.name} for {self.workflow.name}")
-            print(f"Inputs: {inputs}")
+            print(f"Inputs: {available_inputs}")
 
             # Execute the current node and mark it as visited
-            outputs = await base_node.execute(inputs)
+            outputs = await base_node.execute(available_inputs)
             print(f"outputs: {outputs}")
             visited.add(node_id)
 
@@ -80,13 +80,14 @@ class WorkflowService:
         """
         if target_node_id not in visited:
             target_node = self.node_mapping[target_node_id]
-            target_node.input[input_handle] = edge_output
+            target_available_inputs = target_node.available_inputs
+            target_available_inputs[input_handle] = edge_output
 
-            can_execute = target_node.get_node().can_execute(target_node.input)
-            print("can execute:", target_node.get_node().name, can_execute, target_node.input)
+            can_execute = target_node.can_execute()
+            print("can execute:", target_node.get_node().name, can_execute, target_available_inputs)
 
             if can_execute:
-                await self.execute_node(target_node_id, visited, target_node.input)
+                await self.execute_node(target_node_id, visited, target_available_inputs)
 
     async def execute(self):
         """
