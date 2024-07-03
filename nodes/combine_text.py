@@ -1,10 +1,10 @@
 from pydantic import Field
 
-from nodes.base_node import Node, NodeType
+from nodes.base_node import BaseNode, NodeType
 from nodes.constants import NodeModelTypes
 
 
-class CombineTextNode(Node):
+class CombineTextNode(BaseNode):
     total_inputs_to_combine: int = Field(default=2)
 
     def __init__(self, **kwargs):

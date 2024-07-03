@@ -1,8 +1,6 @@
 from typing import List, Optional, Dict
 from pydantic import BaseModel
 
-from workflows.workflow_node import WorkFlowNode
-
 
 class WorkflowSchema(BaseModel):
     """This is the schema for a workflow. Created by user."""
@@ -17,15 +15,12 @@ class WorkflowSchema(BaseModel):
     def __str__(self):
         return f"{self.name} - {self.description or 'No description'}"
 
-    def add_nodes(self, nodes: List[WorkFlowNode]):
+    def add_nodes(self, nodes: List[str]):
         for node in nodes:
-            self.nodes.append(node.id)  # TODO: Maybe redundant?
+            self.nodes.append(node)  # TODO: Maybe redundant?
 
     def add_edges(self, edges: List[Dict[str, str]]):
         self.edges = edges or []
-
-    def get_node(self, id: str) -> Optional[WorkFlowNode]:
-        return
 
     def to_dict(self) -> dict:
         return self.__dict__

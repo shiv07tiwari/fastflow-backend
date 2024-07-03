@@ -1,9 +1,9 @@
-from nodes.base_node import Node, NodeType
+from nodes.base_node import BaseNode, NodeType
 from nodes.constants import NodeModelTypes
 from services import GeminiService
 
 
-class GeminiNode(Node):
+class GeminiNode(BaseNode):
     def __init__(self, **kwargs):
         if kwargs:
             super().__init__(**kwargs)
@@ -21,15 +21,24 @@ class GeminiNode(Node):
                 **kwargs
             )
 
+    def format_prompt(self, prompt: str, input: dict) -> str:
+        # Filter out keys that are in self.inputs and not in the prompt
+        formatted_input = {k: v for k, v in input.items()
+                           if k not in self.inputs and f"{{{k}}}" in prompt}
+
+        # Use ** to unpack the dictionary as keyword arguments
+        return prompt.format(**formatted_input)
+
     async def execute(self, input: dict) -> {}:
         service = GeminiService()
-        for keys in input.keys():
-            if keys not in self.inputs:
-                raise ValueError(f"Invalid variable {keys} for node {self.name}")
+        for keys in self.inputs:
+            if keys not in input:
+                raise ValueError(f"Missing input: {keys} for node: {self.name}")
 
         prompt = input.get("prompt")
+        formatted_prompt = self.format_prompt(prompt, input)
 
-        response = await service.generate_response(prompt=prompt, name=self.name, stream=None)
+        response = await service.generate_response(prompt=formatted_prompt, name=self.name, stream=None)
         return {
             "response": response.text
         }

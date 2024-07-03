@@ -1,8 +1,8 @@
-from nodes.base_node import Node
+from nodes.base_node import BaseNode
 from nodes.constants import NodeModelTypes
 
 
-class UserInputNode(Node):
+class UserInputNode(BaseNode):
     """
     Used to accept an input from user/api
     """
