@@ -37,6 +37,7 @@ async def root():
 
 class WorkflowRunRequest(BaseModel):
     id: str
+    nodes: list | None = None
 
 
 @app.post("/workflow/run")
@@ -49,11 +50,10 @@ async def run_workflow(request: WorkflowRunRequest):
     This currently only supports serial execution of the workflow
     """
     workflow_id = request.id
+    nodes = request.nodes
     workflow = WorkflowRepository().fetch_by_id(workflow_id)
-    workflow_service = WorkflowService(
-        workflow=workflow,
-    )
-    await workflow_service.execute()
+    workflow_service = WorkflowService(workflow=workflow)
+    await workflow_service.execute(nodes)
     return {
         "response": "success"
     }

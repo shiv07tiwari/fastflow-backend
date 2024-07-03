@@ -89,13 +89,16 @@ class WorkflowService:
             if can_execute:
                 await self.execute_node(target_node_id, visited, target_available_inputs)
 
-    async def execute(self):
+    async def execute(self, nodes: list):
         """
         DFS traversal of the workflow graph
+        @param nodes: List of nodes from frontend.
+        A lot of the data is already present in the workflow object but we need to update the available inputs
+        Thus might as well pass the nodes from the frontend
         :return:
         """
         repo = WorkflowNodeRepository()
-        workflow_nodes = repo.fetch_all_by_workflow_id(self.workflow.id)
+        workflow_nodes = [WorkFlowNode(**node) for node in nodes]
         self.node_mapping = {node.id: node for node in workflow_nodes}
 
         self._create_adjacency_list(workflow_nodes)
