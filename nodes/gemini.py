@@ -24,7 +24,7 @@ class GeminiNode(BaseNode):
     def format_prompt(self, prompt: str, input: dict) -> str:
         # Filter out keys that are in self.inputs and not in the prompt
         formatted_input = {k: v for k, v in input.items()
-                           if k not in self.inputs and f"{{{k}}}" in prompt}
+                           if k in self.inputs and f"{{{k}}}" in prompt}
 
         # Use ** to unpack the dictionary as keyword arguments
         return prompt.format(**formatted_input)
@@ -33,7 +33,7 @@ class GeminiNode(BaseNode):
         service = GeminiService()
         for keys in self.inputs:
             if keys not in input:
-                raise ValueError(f"Missing input: {keys} for node: {self.name}")
+                print("WARNING: ", keys, " not in input")
 
         prompt = input.get("prompt")
         formatted_prompt = self.format_prompt(prompt, input)

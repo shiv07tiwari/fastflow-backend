@@ -29,7 +29,7 @@ class WorkflowService:
         for edge in self.input_edges:
             source = edge['source']
             target = edge['target']
-            output_handle = edge.get('outputHandle', "response")
+            output_handle = edge.get('outputHandle', "response") or "response"
             input_handle = edge.get('inputHandle', None)
 
             if source not in adj_list:
@@ -84,11 +84,20 @@ class WorkflowService:
             target_available_inputs = target_node.available_inputs
             target_available_inputs[input_handle] = edge_output
 
-            can_execute = target_node.can_execute()
+
+            try:
+                can_execute = target_node.can_execute()
+            except ValueError as e:
+                can_execute = True
+                print("ERROR: Failed to fetch can execute:", e)
+
             print("can execute:", target_node.get_node().name, can_execute, target_available_inputs)
 
             if can_execute:
-                await self.execute_node(target_node_id, visited, target_available_inputs)
+                try:
+                    await self.execute_node(target_node_id, visited, target_available_inputs)
+                except ValueError as e:
+                    print("ERROR: Failed to execute node:", e)
 
     async def execute(self, nodes: list, edges: list):
         """
