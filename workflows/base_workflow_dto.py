@@ -23,13 +23,27 @@ class WorkflowResponseDTO:
         """
         Nodes is passed as a parameter because the whole object is not a part of the WorkflowSchema
         """
+        # In Edges, the key inputHandle has to be converted to targetHandle
+        # outputHandle has to be converted to sourceHandle !!!
+        # This is to maintain consistency with the react webflow builder
+        edges = []
+        for edge in workflow.edges:
+            edge_output = {
+                **edge,
+                "sourceHandle": edge.get('outputHandle', "response"),
+                "targetHandle": edge.get('inputHandle', None)
+            }
+            edge_output.pop('outputHandle', None)
+            edge_output.pop('inputHandle', None)
+            edges.append(edge_output)
+
         return WorkflowResponseDTO(
             id=workflow.id,
             name=workflow.name,
             description=workflow.description,
             owner=workflow.owner,
             nodes=nodes,
-            edges=workflow.edges,
+            edges=edges,
             adj_list=workflow.adj_list
         )
 

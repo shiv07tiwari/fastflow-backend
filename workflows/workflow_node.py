@@ -28,7 +28,7 @@ class WorkFlowNode(BaseModel):
         # Ensure that all base node inputs are available and required
         for input in base_node_inputs:
             if input not in self.required_inputs:
-                raise ValueError(f"Missing required input {input} for node {base_node.name}")
+                raise ValueError(f"{input} is missing for {self.id}")
 
         for input in base_node_inputs:
             if input not in self.available_inputs:

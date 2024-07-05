@@ -9,6 +9,7 @@ class WorkflowService:
     workflow = WorkflowSchema
     node_mapping: Dict[str, WorkFlowNode] = {}  # Store mapping of node id to node object
     adj_list: Dict[str, List[Dict[str, str]]] = {}  # Store adjacency list with handles
+    input_edges: List[Dict[str, str]] = []
 
     def __init__(self, workflow: WorkflowSchema):
         self.workflow = workflow
@@ -17,7 +18,7 @@ class WorkflowService:
         all_nodes = set(self.adj_list.keys())
         target_nodes = set()
 
-        for edge in self.workflow.edges:
+        for edge in self.input_edges:
             target_nodes.add(edge['target'])
 
         start_nodes = all_nodes - target_nodes
@@ -25,7 +26,7 @@ class WorkflowService:
 
     def _create_adjacency_list(self, workflow_nodes: List[WorkFlowNode]):
         adj_list = {node.id: [] for node in workflow_nodes}
-        for edge in self.workflow.edges:
+        for edge in self.input_edges:
             source = edge['source']
             target = edge['target']
             output_handle = edge.get('outputHandle', "response")
@@ -89,7 +90,7 @@ class WorkflowService:
             if can_execute:
                 await self.execute_node(target_node_id, visited, target_available_inputs)
 
-    async def execute(self, nodes: list):
+    async def execute(self, nodes: list, edges: list):
         """
         DFS traversal of the workflow graph
         @param nodes: List of nodes from frontend.
@@ -97,9 +98,9 @@ class WorkflowService:
         Thus might as well pass the nodes from the frontend
         :return:
         """
-        repo = WorkflowNodeRepository()
         workflow_nodes = [WorkFlowNode(**node) for node in nodes]
         self.node_mapping = {node.id: node for node in workflow_nodes}
+        self.input_edges = edges
 
         self._create_adjacency_list(workflow_nodes)
         print("Adjacency List:", self.adj_list)

@@ -15,7 +15,7 @@ class GeminiNode(BaseNode):
                 description="Generate a Response from Gemini AI",
                 node_type=NodeType.AI.value,
                 is_active=True,
-                inputs=["prompt"],
+                inputs=["prompt", "input1", "input2"],
                 outputs=["response"],
                 workflow_node_type=NodeModelTypes.Gemini,
                 **kwargs
@@ -45,7 +45,7 @@ class GeminiNode(BaseNode):
 
     def can_execute(self, inputs: dict) -> bool:
         for input_key in self.inputs:
-            if input_key not in inputs:
+            if input_key not in inputs or not inputs[input_key]:
                 return False
         return True
 

@@ -38,6 +38,7 @@ async def root():
 class WorkflowRunRequest(BaseModel):
     id: str
     nodes: list | None = None
+    edges: list | None = None
 
 
 @app.post("/workflow/run")
@@ -51,9 +52,22 @@ async def run_workflow(request: WorkflowRunRequest):
     """
     workflow_id = request.id
     nodes = request.nodes
+    edges = request.edges
+
+    formatted_edges = []
+    for edge in edges:
+        edge_output = {
+            **edge,
+            "outputHandle": edge.get('sourceHandle', "response"),
+            "inputHandle": edge.get('targetHandle', None)
+        }
+        edge_output.pop('sourceHandle', None)
+        edge_output.pop('targetHandle', None)
+        formatted_edges.append(edge_output)
+
     workflow = WorkflowRepository().fetch_by_id(workflow_id)
     workflow_service = WorkflowService(workflow=workflow)
-    await workflow_service.execute(nodes)
+    await workflow_service.execute(nodes, formatted_edges)
     return {
         "response": "success"
     }
