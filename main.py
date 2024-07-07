@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 
 from databases.fixtures import Fixtures
+from databases.repository.node import NodeRepository
 from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
 from services.workflow import WorkflowService
@@ -67,10 +68,15 @@ async def run_workflow(request: WorkflowRunRequest):
 
     workflow = WorkflowRepository().fetch_by_id(workflow_id)
     workflow_service = WorkflowService(workflow=workflow)
-    await workflow_service.execute(nodes, formatted_edges)
-    return {
-        "response": "success"
-    }
+    mapping = await workflow_service.execute(nodes, formatted_edges)
+
+    response = []
+    for node_id, node in mapping.items():
+        response.append({
+            "id": node_id,
+            "output": node.output
+        })
+    return response
 
 
 @app.get("/workflow/{workflow_id}")
@@ -85,3 +91,8 @@ async def get_workflow(workflow_id: str):
     return WorkflowResponseDTO.to_response(workflow, nodes)
 
 Fixtures().add_test_data(1)
+
+@app.get("/nodes")
+async def get_nodes():
+    nodes = NodeRepository().fetch_all()
+    return nodes

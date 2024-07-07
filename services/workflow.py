@@ -61,6 +61,7 @@ class WorkflowService:
 
             # Execute the current node and mark it as visited
             outputs = await base_node.execute(available_inputs)
+            node.output = outputs
             print(f"outputs: {outputs}")
             visited.add(node_id)
 
@@ -99,7 +100,7 @@ class WorkflowService:
                 except ValueError as e:
                     print("ERROR: Failed to execute node:", e)
 
-    async def execute(self, nodes: list, edges: list):
+    async def execute(self, nodes: list, edges: list) -> Dict[str, WorkFlowNode]:
         """
         DFS traversal of the workflow graph
         @param nodes: List of nodes from frontend.
@@ -118,4 +119,6 @@ class WorkflowService:
         start_nodes = self.get_start_nodes()
         for start_node in start_nodes:
             await self.execute_node(start_node, visited)
+
+        return self.node_mapping
 

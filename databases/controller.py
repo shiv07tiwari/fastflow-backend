@@ -26,6 +26,10 @@ class DatabaseController:
             raise errors.GenericError(errors.NoRecordFound)
         return data.to_dict()
 
+    def list(self, table: str) -> list:
+        docs = self.db.collection(table).stream()
+        return [doc.to_dict() for doc in docs]
+
     def query(self, table: str, key: str, op: str, value) -> list:
         docs = self.db.collection(table).where(filter=FieldFilter(key, op, value)).stream()
         query_results = []
