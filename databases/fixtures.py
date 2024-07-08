@@ -2,6 +2,7 @@ from databases import base
 from databases.constants import Tables
 from databases.controller import DatabaseController
 from nodes.combine_text import CombineTextNode
+from nodes.file_reader import FileReader
 from nodes.gemini import GeminiNode
 from nodes.user_input import UserInputNode
 from nodes.web_scraper import WebScraperNode
@@ -22,6 +23,7 @@ class Fixtures:
             combine_text_node = CombineTextNode()
             web_scrapper_node = WebScraperNode()
             user_input_node = UserInputNode()
+            file_reader_node = FileReader()
 
             gemini_workflow = base_workflow.WorkflowSchema(
                 id="WF"+str(i),
@@ -51,21 +53,6 @@ class Fixtures:
                 },
                 output={},
             )
-            # gemini_workflow_node_3 = workflow_node.WorkFlowNode(
-            #     id="WN" + gemini_workflow.id + str(i + 2),
-            #     workflow=gemini_workflow.id,
-            #     node=gemini_node.id,
-            #     input={},
-            #     output={},
-            # )
-            # combine_text_workflow_node = workflow_node.WorkFlowNode(
-            #     id="WN"+gemini_workflow.id+str(i+3),
-            #     workflow=gemini_workflow.id,
-            #     node=combine_text_node.id,
-            #     input={},
-            #     output={},
-            #     total_inputs_to_combine=2
-            # )
             workflow_nodes = [
                 web_workflow_node.id,
                 gemini_workflow_node_2.id,
@@ -87,8 +74,7 @@ class Fixtures:
             self.db_controller.insert(Tables.Node, combine_text_node.to_dict(), document_id=combine_text_node.id)
             self.db_controller.insert(Tables.Node, web_scrapper_node.to_dict(), document_id=web_scrapper_node.id)
             self.db_controller.insert(Tables.Node, user_input_node.to_dict(), document_id=user_input_node.id)
+            self.db_controller.insert(Tables.Node, file_reader_node.to_dict(), document_id=file_reader_node.id)
             self.db_controller.insert(Tables.WorkflowSchema, gemini_workflow.to_dict(), document_id=gemini_workflow.id)
             self.db_controller.insert(Tables.WorkFlowNode, web_workflow_node.to_dict(), document_id=web_workflow_node.id)
             self.db_controller.insert(Tables.WorkFlowNode, gemini_workflow_node_2.to_dict(), document_id=gemini_workflow_node_2.id)
-            # self.db_controller.insert(Tables.WorkFlowNode, combine_text_workflow_node.to_dict(), document_id=combine_text_workflow_node.id)
-            # self.db_controller.insert(Tables.WorkFlowNode, gemini_workflow_node_3.to_dict(), document_id=gemini_workflow_node_3.id)

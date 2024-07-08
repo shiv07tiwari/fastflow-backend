@@ -3,3 +3,4 @@ class NodeModelTypes:
     CombineText = 'combine_text'
     UserInput = 'user_input'
     WebScraper = 'webscraper'
+    FileReader = 'file_reader'
