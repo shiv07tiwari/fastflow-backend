@@ -11,7 +11,7 @@ from workflows import workflow_node, base_workflow
 
 class Fixtures:
     def __init__(self):
-        self.db_controller = DatabaseController(db=base.db)
+        self.db_controller = DatabaseController()
 
     def add_test_data(self, n: int = 1):
         self.db_controller.clear_table(Tables.Node)

@@ -11,7 +11,7 @@ class WorkflowNodeRepository:
     table: str
 
     def __init__(self):
-        self.db_controller = DatabaseController(base.db)
+        self.db_controller = DatabaseController()
         self.table = Tables.WorkFlowNode
 
     def fetch_all_by_workflow_id(self, workflow_id) -> List[WorkFlowNode]:

@@ -1,4 +1,3 @@
-from databases import base
 from databases.constants import Tables, NodeTypeClassMappings
 from databases.controller import DatabaseController
 from nodes.base_node import BaseNode
@@ -9,7 +8,7 @@ class NodeRepository:
     table: str
 
     def __init__(self):
-        self.db_controller = DatabaseController(base.db)
+        self.db_controller = DatabaseController()
         self.table = Tables.Node
 
     def fetch_by_id(self, node_id: str) -> BaseNode:

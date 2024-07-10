@@ -20,8 +20,13 @@ class FileReader(BaseNode):
                 **kwargs
             )
 
-    def execute(self, input: dict) -> dict:
-        file_path = input.get("file")
-        with open(file_path, 'r') as file:
-            data = file.read()
-        return {"file_contents": data}
+    async def execute(self, input: dict) -> dict:
+        from databases.repository.file_upload import FileUploadRepository
+        file_path = input.get("file_path")
+        repo = FileUploadRepository()
+        try:
+            file_contents = repo.read_file(file_path)
+        except Exception as e:
+            return {"error": str(e)}
+
+        return {"response": file_contents}

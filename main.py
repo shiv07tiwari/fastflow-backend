@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-
 from databases.fixtures import Fixtures
 from databases.repository.node import NodeRepository
 from databases.repository.workflow import WorkflowRepository
@@ -15,7 +14,6 @@ from workflows.base_workflow_dto import WorkflowResponseDTO
 app = FastAPI()
 
 load_dotenv()
-
 
 origins = [
     "http://localhost",
@@ -30,6 +28,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/")
 async def root():
@@ -90,7 +89,9 @@ async def get_workflow(workflow_id: str):
     nodes = WorkflowNodeRepository().fetch_all_by_workflow_id(workflow_id)
     return WorkflowResponseDTO.to_response(workflow, nodes)
 
+
 Fixtures().add_test_data(1)
+
 
 @app.get("/nodes")
 async def get_nodes():

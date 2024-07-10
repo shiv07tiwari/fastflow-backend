@@ -11,7 +11,7 @@ class WorkflowRepository:
     workflow_node_repo: WorkflowNodeRepository
 
     def __init__(self):
-        self.db_controller = DatabaseController(base.db)
+        self.db_controller = DatabaseController()
         self.table = Tables.WorkflowSchema
         self.workflow_node_repo = WorkflowNodeRepository()
 
