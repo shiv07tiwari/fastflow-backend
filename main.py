@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -10,10 +12,14 @@ from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
 from services.workflow import WorkflowService
 from workflows.base_workflow_dto import WorkflowResponseDTO
+import google.generativeai as genai
 
 app = FastAPI()
 
 load_dotenv()
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", None)
+genai.configure(api_key=GEMINI_API_KEY)
 
 origins = [
     "http://localhost",
@@ -73,7 +79,7 @@ async def run_workflow(request: WorkflowRunRequest):
     for node_id, node in mapping.items():
         response.append({
             "id": node_id,
-            "output": node.output
+            "output": node.outputs
         })
     return response
 

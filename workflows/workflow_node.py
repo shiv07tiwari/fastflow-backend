@@ -3,7 +3,6 @@ from typing import List
 from pydantic import BaseModel
 
 from databases.repository.node import NodeRepository
-from nodes.base_node import BaseNode
 
 
 class WorkFlowNode(BaseModel):
@@ -12,7 +11,7 @@ class WorkFlowNode(BaseModel):
     workflow: str | None = None
     required_inputs: List[str] | None = []
     available_inputs: dict | None = {}
-    output: dict | None = {}
+    outputs: dict | None = {}
 
     def to_dict(self) -> dict:
         return self.__dict__

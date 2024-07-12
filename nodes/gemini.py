@@ -40,7 +40,7 @@ class GeminiNode(BaseNode):
 
         response = await service.generate_response(prompt=formatted_prompt, name=self.name, stream=None)
         return {
-            "response": response.text
+            "response": response
         }
 
     def can_execute(self, inputs: dict) -> bool:

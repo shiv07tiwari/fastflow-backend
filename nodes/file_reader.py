@@ -1,4 +1,5 @@
 from nodes.base_node import BaseNode
+from services.utils import extract_links
 
 
 class FileReader(BaseNode):
@@ -15,7 +16,7 @@ class FileReader(BaseNode):
                 node_type="ai",
                 is_active=True,
                 inputs=["file_path"],
-                outputs=["file_contents"],
+                outputs=["response", "links"],
                 workflow_node_type="file_reader",
                 **kwargs
             )
@@ -26,7 +27,11 @@ class FileReader(BaseNode):
         repo = FileUploadRepository()
         try:
             file_contents = repo.read_file(file_path)
+            links = extract_links(file_contents)
         except Exception as e:
             return {"error": str(e)}
 
-        return {"response": file_contents}
+        return {
+            "response": file_contents,
+            "links": links
+        }

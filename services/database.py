@@ -29,7 +29,7 @@ class DataBase:
             workflow=self.gemini_workflow.id,
             node=self.gemini_node.id,
             input={"prompt": "Return only the official website URL of Instawork, including HTTPS. It should be a valid URL."},
-            output={},
+            outputs={},
         )
         # self.gemini_workflow_node_2 = WorkFlowNode(
         #     id="2",
@@ -43,7 +43,7 @@ class DataBase:
             workflow=self.gemini_workflow.id,
             node=self.web_scrape_node.id,
             input={},
-            output={},
+            outputs={},
         )
         self.workflow_nodes = [
             self.gemini_workflow_node,

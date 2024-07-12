@@ -61,7 +61,7 @@ class WorkflowService:
 
             # Execute the current node and mark it as visited
             outputs = await base_node.execute(available_inputs)
-            node.output = outputs
+            node.outputs = outputs
             print(f"outputs: {outputs}")
             visited.add(node_id)
 
