@@ -5,3 +5,4 @@ class NodeModelTypes:
     WebScraper = 'web_scraper'
     FileReader = 'file_reader'
     ResumeAnalysis = 'resume_analysis'
+    SummarizerNode = 'summarizer'

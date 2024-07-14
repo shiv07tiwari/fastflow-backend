@@ -14,6 +14,8 @@ class WorkflowResponseDTO:
     edges: List[Dict[str, str]]
     adj_list: Dict[str, List[Dict[str, str]]]
     description: Optional[str] = None
+    input_handles: Optional[List[str]] = None
+    output_handles: Optional[List[str]] = None
 
     def to_dict(self) -> dict:
         return self.__dict__

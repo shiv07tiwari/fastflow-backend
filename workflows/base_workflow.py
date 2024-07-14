@@ -19,7 +19,10 @@ class WorkflowSchema(BaseModel):
         for node in nodes:
             self.nodes.append(node)  # TODO: Maybe redundant?
 
-    def add_edges(self, edges: List[Dict[str, str]]):
+    def set_nodes(self, nodes: List[str]):
+        self.nodes = nodes or []
+
+    def set_edges(self, edges: List[Dict[str, str]]):
         self.edges = edges or []
 
     def to_dict(self) -> dict:

@@ -73,7 +73,7 @@ class ResumeAnalysisNode(FileReader):
             node_type="ai",
             is_active=True,
             inputs=["file_path"],
-            outputs=["response"],
+            outputs=["response", "links"],
             workflow_node_type="file_reader",
         )
 
@@ -81,21 +81,29 @@ class ResumeAnalysisNode(FileReader):
         file_output = await super().execute(input)
         gemini_service = GeminiService()
         formatted_prompt = EXTRACTOR_PROMPT.format(resume=file_output['response'])
-        extracted_information = await gemini_service.generate_response(formatted_prompt, name="resume_analysis", stream=False)
+        extracted_information = await gemini_service.generate_response(formatted_prompt, name="resume_analysis",
+                                                                       stream=False)
         extracted_information_json = json.loads(extracted_information)
 
-        github_data = await run_in_threadpool(scrape_website_content, extracted_information_json['github'], 30000)
+        github_url = extracted_information_json.get("github")
+        linkedin_url = extracted_information_json.get("linkedin")
+        portfolio_url = extracted_information_json.get("portfolio")
+        project_url = extracted_information_json.get("project")
 
-        portfolio_data = await run_in_threadpool(scrape_website_content, extracted_information_json['portfolio'], 30000)
+        github_data = await run_in_threadpool(scrape_website_content, github_url, 30000)
 
-        project_data = await run_in_threadpool(scrape_website_content, extracted_information_json['project'], 30000)
+        portfolio_data = await run_in_threadpool(scrape_website_content, portfolio_url, 30000)
 
+        project_data = await run_in_threadpool(scrape_website_content, project_url, 30000)
 
         resume_data = extracted_information_json["work_experience"] + extracted_information_json["skills"]
-        consolidator_prompt = CONSOLIDATOR_PROMPT.format(resume=resume_data, github=github_data, portfolio=portfolio_data, project=project_data)
+        consolidator_prompt = CONSOLIDATOR_PROMPT.format(resume=resume_data, github=github_data,
+                                                         portfolio=portfolio_data, project=project_data)
         response = await gemini_service.generate_response(consolidator_prompt, name="resume_analysis", stream=False)
-
 
         return {
             "response": response,
+            "links": [
+                github_url, linkedin_url, portfolio_url, project_url
+            ]
         }

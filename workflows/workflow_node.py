@@ -12,6 +12,8 @@ class WorkFlowNode(BaseModel):
     required_inputs: List[str] | None = []
     available_inputs: dict | None = {}
     outputs: dict | None = {}
+    input_handles: List[str] | None = []
+    output_handles: List[str] | None = []
 
     def to_dict(self) -> dict:
         return self.__dict__

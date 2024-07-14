@@ -18,7 +18,7 @@ class CombineTextNode(BaseNode):
                 description="Combine multiple text nodes into one",
                 node_type=NodeType.JOIN.value,
                 is_active=True,
-                inputs=["text"],
+                inputs=["input_text_1", "input_text_2"],
                 outputs=["combined_text"],
                 workflow_node_type=NodeModelTypes.CombineText,
                 **kwargs
@@ -28,7 +28,7 @@ class CombineTextNode(BaseNode):
     async def execute(self, input: dict) -> dict:  # Corrected return type annotation
         combined_text = ""
         for i in range(1, self.total_inputs_to_combine + 1):
-            text = input.get(f"text-{i}")
+            text = input.get(f"input_text_{i}")
             if text is not None:  # Ensure 'text' is not None
                 combined_text += text.strip() + " "  # Corrected 'trim()' to 'strip()'
         return {"response": combined_text.strip()}  # Remove trailing whitespace

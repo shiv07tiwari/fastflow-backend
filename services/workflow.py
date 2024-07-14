@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
 from workflows.base_workflow import WorkflowSchema
 from workflows.workflow_node import WorkFlowNode
@@ -10,6 +11,8 @@ class WorkflowService:
     node_mapping: Dict[str, WorkFlowNode] = {}  # Store mapping of node id to node object
     adj_list: Dict[str, List[Dict[str, str]]] = {}  # Store adjacency list with handles
     input_edges: List[Dict[str, str]] = []
+    workflow_repo = WorkflowRepository()
+    node_repo = WorkflowNodeRepository()
 
     def __init__(self, workflow: WorkflowSchema):
         self.workflow = workflow
@@ -119,6 +122,17 @@ class WorkflowService:
         start_nodes = self.get_start_nodes()
         for start_node in start_nodes:
             await self.execute_node(start_node, visited)
+
+        # Get list of nodes from node_mapping
+        updated_nodes = list(self.node_mapping.values())
+        updated_node_ids = [node.id for node in updated_nodes]
+
+        self.workflow.set_edges(edges)
+        self.workflow.set_nodes(updated_node_ids)
+        self.workflow_repo.add_or_update(self.workflow)
+
+        for node in updated_nodes:
+            self.node_repo.add_or_update(node.id, node.to_dict())
 
         return self.node_mapping
 

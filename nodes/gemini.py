@@ -15,7 +15,7 @@ class GeminiNode(BaseNode):
                 description="Generate a Response from Gemini AI",
                 node_type=NodeType.AI.value,
                 is_active=True,
-                inputs=["prompt", "input1", "input2"],
+                inputs=["prompt", "input_1", "input_2"],
                 outputs=["response"],
                 workflow_node_type=NodeModelTypes.Gemini,
                 **kwargs

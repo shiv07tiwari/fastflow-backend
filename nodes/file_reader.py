@@ -16,7 +16,7 @@ class FileReader(BaseNode):
                 node_type="ai",
                 is_active=True,
                 inputs=["file_path"],
-                outputs=["response", "links"],
+                outputs=["response"],
                 workflow_node_type="file_reader",
                 **kwargs
             )

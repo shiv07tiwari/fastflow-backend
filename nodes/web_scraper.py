@@ -27,6 +27,11 @@ class WebScraperNode(BaseNode):
 
     async def execute(self, input: dict) -> dict:
         url: str = input.get("url")
+
+        if type(url) is list:
+            print("WARNING: Multiple URLs provided, using the first one")
+            url = url[0]
+
         url = url.strip()
         data = await run_in_threadpool(scrape_website_content, url, 30000)
         return {"response": data}

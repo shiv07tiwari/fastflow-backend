@@ -96,7 +96,7 @@ async def get_workflow(workflow_id: str):
     return WorkflowResponseDTO.to_response(workflow, nodes)
 
 
-Fixtures().add_test_data(1)
+# Fixtures().add_test_data(1)
 
 
 @app.get("/nodes")
