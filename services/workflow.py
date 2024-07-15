@@ -11,11 +11,11 @@ class WorkflowService:
     node_mapping: Dict[str, WorkFlowNode] = {}  # Store mapping of node id to node object
     adj_list: Dict[str, List[Dict[str, str]]] = {}  # Store adjacency list with handles
     input_edges: List[Dict[str, str]] = []
-    workflow_repo = WorkflowRepository()
-    node_repo = WorkflowNodeRepository()
+    execution_order = []
 
     def __init__(self, workflow: WorkflowSchema):
         self.workflow = workflow
+        self.execution_order = []
 
     def get_start_nodes(self) -> List[str]:
         all_nodes = set(self.adj_list.keys())
@@ -65,6 +65,7 @@ class WorkflowService:
             # Execute the current node and mark it as visited
             outputs = await base_node.execute(available_inputs)
             node.outputs = outputs
+            self.execution_order.append(node_id)
             print(f"outputs: {outputs}")
             visited.add(node_id)
 
@@ -87,7 +88,6 @@ class WorkflowService:
             target_node = self.node_mapping[target_node_id]
             target_available_inputs = target_node.available_inputs
             target_available_inputs[input_handle] = edge_output
-
 
             try:
                 can_execute = target_node.can_execute()
@@ -123,16 +123,7 @@ class WorkflowService:
         for start_node in start_nodes:
             await self.execute_node(start_node, visited)
 
-        # Get list of nodes from node_mapping
-        updated_nodes = list(self.node_mapping.values())
-        updated_node_ids = [node.id for node in updated_nodes]
-
-        self.workflow.set_edges(edges)
-        self.workflow.set_nodes(updated_node_ids)
-        self.workflow_repo.add_or_update(self.workflow)
-
-        for node in updated_nodes:
-            self.node_repo.add_or_update(node.id, node.to_dict())
-
+        # Sort node mapping by execution order
+        self.node_mapping = {node_id: self.node_mapping[node_id] for node_id in self.execution_order}
         return self.node_mapping
 

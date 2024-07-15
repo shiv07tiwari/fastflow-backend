@@ -1,13 +1,9 @@
-import io
-
 import errors
 
 from google.cloud.firestore_v1.base_query import FieldFilter
 
 from databases import base
 from databases.constants import QueryOperations
-import pdfplumber
-
 
 class DatabaseController:
     def __init__(self):
@@ -24,6 +20,10 @@ class DatabaseController:
 
     def update(self, table: str, data: dict, document_id: str):
         self.db.collection(table).document(document_id).update(data)
+
+    def delete(self, table: str, document_id: str):
+        self.db.collection(table).document(document_id).delete()
+        print(f"Deleted document {document_id} from table {table}")
 
     def get(self, table: str, document_id: str) -> dict:
         data = self.db.collection(table).document(document_id).get()
@@ -70,19 +70,11 @@ class DatabaseController:
 
         print(f"Cleared {deleted} documents from table {table}")
 
-    def extract_text_from_pdf(self, pdf_bytes):
-        text = ''
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            for page in pdf.pages:
-                text += page.extract_text() + '\n'  # Extract text from each page and add a newline
-        return text
-
     def get_file_content(self, file_path: str):
         try:
             blob = self.bucket.blob(file_path)
             file_bytes = blob.download_as_bytes()
-            text = self.extract_text_from_pdf(file_bytes)
-            return text
+            return file_bytes
         except Exception as e:
             print(f"Error downloading file: {e}")
             raise Exception("Failed to download file from Firebase Storage")

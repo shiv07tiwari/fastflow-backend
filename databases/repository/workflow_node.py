@@ -27,3 +27,6 @@ class WorkflowNodeRepository:
 
     def add_or_update(self, node_id, data):
         self.db_controller.insert(self.table, data, node_id)
+
+    def delete(self, node_id):
+        self.db_controller.delete(self.table, node_id)

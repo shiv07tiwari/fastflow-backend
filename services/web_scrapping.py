@@ -1,6 +1,7 @@
 import time
 
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
+from databases.cache import cache_response
 
 CHROME_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"  # noqa: E501
 
@@ -40,6 +41,7 @@ def _smart_scroll(page, timeout):
         last_height = new_height
 
 
+@cache_response()
 def scrape_website_content(url: str, timeout=30000):
     try:
         with sync_playwright() as p:
