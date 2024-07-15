@@ -1,4 +1,4 @@
-from nodes import combine_text, user_input, gemini, web_scraper, file_reader, resume_analysis, summarizer
+from nodes import combine_text, user_input, gemini, web_scraper, file_reader, resume_analysis, summarizer, zip_reader
 from nodes.constants import NodeModelTypes
 
 
@@ -35,5 +35,6 @@ NodeTypeClassMappings = {
     NodeModelTypes.FileReader: file_reader.FileReader,
     NodeModelTypes.ResumeAnalysis: resume_analysis.ResumeAnalysisNode,
     NodeModelTypes.SummarizerNode: summarizer.SummarizerNode,
+    NodeModelTypes.ZipReaderNode: zip_reader.ZipReaderNode
 
 }

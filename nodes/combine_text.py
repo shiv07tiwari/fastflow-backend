@@ -20,7 +20,6 @@ class CombineTextNode(BaseNode):
                 is_active=True,
                 inputs=["input_text_1", "input_text_2"],
                 outputs=["combined_text"],
-                workflow_node_type=NodeModelTypes.CombineText,
                 **kwargs
             )
         self.total_inputs_to_combine = kwargs.get("total_inputs_to_combine", 2)

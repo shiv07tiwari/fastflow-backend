@@ -30,7 +30,6 @@ class BaseNode(BaseModel):
     node_type: str
     inputs: List[str] = []
     outputs: List[str] = []
-    workflow_node_type: str
 
     def execute(self, *args, **kwargs):
         raise NotImplementedError()

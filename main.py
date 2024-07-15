@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
+from databases.fixtures import Fixtures
 from databases.repository.node import NodeRepository
 from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
@@ -90,6 +91,9 @@ async def run_workflow(request: WorkflowRunRequest):
     workflow_repo.add_or_update(workflow)
 
     for node in updated_nodes:
+        node.workflow = workflow_id
+        # Remove all keys from node.available_inputs that contain input in the key
+        node.available_inputs = {k: v for k, v in node.available_inputs.items() if "input" not in k}
         node_repo.add_or_update(node.id, node.to_dict())
 
     for node in original_nodes:
@@ -118,7 +122,7 @@ async def get_workflow(workflow_id: str):
     return WorkflowResponseDTO.to_response(workflow, nodes)
 
 
-# Fixtures().add_test_data(1)
+Fixtures().add_test_data(1)
 
 
 @app.get("/nodes")

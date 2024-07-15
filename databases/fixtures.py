@@ -8,6 +8,7 @@ from nodes.resume_analysis import ResumeAnalysisNode
 from nodes.summarizer import SummarizerNode
 from nodes.user_input import UserInputNode
 from nodes.web_scraper import WebScraperNode
+from nodes.zip_reader import ZipReaderNode
 from workflows import workflow_node, base_workflow
 
 
@@ -17,74 +18,17 @@ class Fixtures:
 
     def add_test_data(self, n: int = 1):
         self.db_controller.clear_table(Tables.Node)
-        self.db_controller.clear_table(Tables.WorkflowSchema)
-        self.db_controller.clear_table(Tables.WorkFlowNode)
+        gemini_node = GeminiNode()
+        combine_text_node = CombineTextNode()
+        web_scrapper_node = WebScraperNode()
+        user_input_node = UserInputNode()
+        file_reader_node = FileReader()
+        resume_analysis_node = ResumeAnalysisNode()
+        summarize_node = SummarizerNode()
+        zip_reader_node = ZipReaderNode()
 
-        for i in range(n):
-            gemini_node = GeminiNode()
-            combine_text_node = CombineTextNode()
-            web_scrapper_node = WebScraperNode()
-            user_input_node = UserInputNode()
-            file_reader_node = FileReader()
-            resume_analysis_node = ResumeAnalysisNode()
-            summarize_node = SummarizerNode()
+        nodes = [gemini_node, combine_text_node, web_scrapper_node, user_input_node, file_reader_node,
+                 resume_analysis_node, summarize_node, zip_reader_node]
 
-            gemini_workflow = base_workflow.WorkflowSchema(
-                id="WF"+str(i),
-                name="Gemini Demo Workflow",
-                owner="admin",
-                edges=[],
-                nodes=[],
-                description="This is a demo workflow for Gemini",
-            )
-
-            web_workflow_node = workflow_node.WorkFlowNode(
-                id="WN"+gemini_workflow.id+str(i),
-                workflow=gemini_workflow.id,
-                node=web_scrapper_node.id,
-                required_inputs=["url"],
-                available_inputs={"url": "https://www.instawork.com/"},
-                output={},
-                input_handles=[],
-                output_handles=["response"],
-            )
-            gemini_workflow_node_2 = workflow_node.WorkFlowNode(
-                id="WN"+gemini_workflow.id+str(i+1),
-                workflow=gemini_workflow.id,
-                node=gemini_node.id,
-                required_inputs=["prompt", "input1"],
-                available_inputs={
-                    "prompt": "This is the data about Instawork. ''' {input1} ''' How many workers does Instawork have?",
-                    "input1": None,
-                },
-                output={},
-                input_handles=["input1"],
-                output_handles=["response"],
-            )
-            workflow_nodes = [
-                web_workflow_node.id,
-                gemini_workflow_node_2.id,
-            ]
-
-            edges = [
-                {
-                    "id": "edge1",
-                    "source": web_workflow_node.id,
-                    "target": gemini_workflow_node_2.id,
-                    "inputHandle": "input1",
-                },
-            ]
-
-            gemini_workflow.add_nodes(workflow_nodes)
-            gemini_workflow.set_edges(edges)
-
-            self.db_controller.insert(Tables.Node, gemini_node.to_dict(), document_id=gemini_node.id)
-            self.db_controller.insert(Tables.Node, combine_text_node.to_dict(), document_id=combine_text_node.id)
-            self.db_controller.insert(Tables.Node, web_scrapper_node.to_dict(), document_id=web_scrapper_node.id)
-            self.db_controller.insert(Tables.Node, user_input_node.to_dict(), document_id=user_input_node.id)
-            self.db_controller.insert(Tables.Node, file_reader_node.to_dict(), document_id=file_reader_node.id)
-            self.db_controller.insert(Tables.Node, resume_analysis_node.to_dict(), document_id=resume_analysis_node.id)
-            self.db_controller.insert(Tables.Node, summarize_node.to_dict(), document_id=summarize_node.id)
-            self.db_controller.insert(Tables.WorkflowSchema, gemini_workflow.to_dict(), document_id=gemini_workflow.id)
-            self.db_controller.insert(Tables.WorkFlowNode, web_workflow_node.to_dict(), document_id=web_workflow_node.id)
-            self.db_controller.insert(Tables.WorkFlowNode, gemini_workflow_node_2.to_dict(), document_id=gemini_workflow_node_2.id)
+        for node in nodes:
+            self.db_controller.insert(Tables.Node, node.to_dict(), document_id=node.id)

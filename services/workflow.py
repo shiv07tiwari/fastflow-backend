@@ -16,6 +16,9 @@ class WorkflowService:
     def __init__(self, workflow: WorkflowSchema):
         self.workflow = workflow
         self.execution_order = []
+        self.node_mapping = {}
+        self.adj_list = {}
+        self.input_edges = []
 
     def get_start_nodes(self) -> List[str]:
         all_nodes = set(self.adj_list.keys())

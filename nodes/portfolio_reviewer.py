@@ -26,7 +26,6 @@ class PortfolioReviewer(BaseNode):
                 is_active=True,
                 inputs=["links"],
                 outputs=["response"],
-                workflow_node_type="portfolio_reviewer",
                 **kwargs
             )
 

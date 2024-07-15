@@ -17,7 +17,6 @@ class GeminiNode(BaseNode):
                 is_active=True,
                 inputs=["prompt", "input_1", "input_2"],
                 outputs=["response"],
-                workflow_node_type=NodeModelTypes.Gemini,
                 **kwargs
             )
 

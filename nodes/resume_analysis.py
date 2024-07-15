@@ -1,6 +1,6 @@
 import json
 
-from nodes.file_reader import FileReader
+from nodes.base_node import BaseNode
 from services import GeminiService
 from services.web_scrapping import scrape_website_content
 from fastapi.concurrency import run_in_threadpool
@@ -59,10 +59,13 @@ PROJECT INFORMATION:
 \\\
 {project}
 \\\
+
+Additional Instructions:
+{instructions}
 """
 
 
-class ResumeAnalysisNode(FileReader):
+class ResumeAnalysisNode(BaseNode):
 
     def __init__(self, **kwargs):
         super().__init__(
@@ -72,17 +75,15 @@ class ResumeAnalysisNode(FileReader):
             description="Analyze a resume to extract key information",
             node_type="ai",
             is_active=True,
-            inputs=["file_path"],
+            inputs=["input_resume", "instructions"],
             outputs=["response", "links"],
-            workflow_node_type="file_reader",
         )
 
-    async def execute(self, input: dict) -> dict:
-        file_output = await super().execute(input)
+    async def _process_resume(self, file_content, instructions):
         gemini_service = GeminiService()
-        formatted_prompt = EXTRACTOR_PROMPT.format(resume=file_output['response'])
-        extracted_information = await gemini_service.generate_response(formatted_prompt, name="resume_analysis",
-                                                                       stream=False)
+        formatted_prompt = EXTRACTOR_PROMPT.format(resume=file_content, instructions=instructions)
+        extracted_information = await gemini_service.generate_cached_response(formatted_prompt, name="resume_analysis",
+                                                                              stream=False)
         extracted_information_json = json.loads(extracted_information)
 
         github_url = extracted_information_json.get("github")
@@ -101,9 +102,15 @@ class ResumeAnalysisNode(FileReader):
                                                          portfolio=portfolio_data, project=project_data)
         response = await gemini_service.generate_response(consolidator_prompt, name="resume_analysis", stream=False)
 
+        return response, [github_url, linkedin_url, portfolio_url, project_url]
+
+    async def execute(self, input: dict) -> dict:
+        file_output = input.get("input_resume")
+        instructions = input.get("instructions")
+
+        response, links = await self._process_resume(file_output, instructions)
+
         return {
             "response": response,
-            "links": [
-                github_url, linkedin_url, portfolio_url, project_url
-            ]
+            "links": links
         }

@@ -27,7 +27,6 @@ class SummarizerNode(BaseNode):
                 is_active=True,
                 inputs=["input_content"],
                 outputs=["response"],
-                workflow_node_type="summarizer",
                 **kwargs
             )
 

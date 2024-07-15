@@ -19,7 +19,6 @@ class UserInputNode(BaseNode):
                 is_active=True,
                 inputs=["input"],
                 outputs=["response"],
-                workflow_node_type=NodeModelTypes.UserInput,
                 **kwargs
             )
 

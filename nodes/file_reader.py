@@ -1,8 +1,6 @@
-import io
-import pandas as pd
 from nodes.base_node import BaseNode
+from services.file_reader import extract_text_from_pdf, extract_data_from_csv
 from services.utils import extract_links
-import pdfplumber
 
 
 class FileReader(BaseNode):
@@ -23,21 +21,6 @@ class FileReader(BaseNode):
                 **kwargs
             )
 
-    def _extract_text_from_pdf(self, pdf_bytes):
-        text = ''
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            for page in pdf.pages:
-                text += page.extract_text() + '\n'
-        return text
-
-    def _extract_data_from_csv(self, file_bytes):
-        try:
-            # Using StringIO to convert bytes to a string buffer
-            csv_data = pd.read_csv(io.StringIO(file_bytes.decode()))
-            return csv_data.to_csv(index=False)  # Convert DataFrame back to CSV format
-        except pd.errors.ParserError as e:
-            return {"error": "Failed to parse CSV file: " + str(e)}
-
     async def execute(self, input: dict) -> dict:
         from databases.repository.file_upload import FileUploadRepository
         file_path = input.get("file_path")
@@ -46,10 +29,10 @@ class FileReader(BaseNode):
         try:
             file_contents = repo.read_file(file_path)
             if file_path.endswith('.pdf'):
-                file_contents = self._extract_text_from_pdf(file_contents)
+                file_contents = extract_text_from_pdf(file_contents)
                 links = extract_links(file_contents)
             elif file_path.endswith('.csv'):
-                file_contents = self._extract_data_from_csv(file_contents)
+                file_contents = extract_data_from_csv(file_contents)
                 links = []
             else:
                 return {"error": f"Unsupported file type for {file_path}"}

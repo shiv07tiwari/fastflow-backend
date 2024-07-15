@@ -22,7 +22,6 @@ class WebScraperNode(BaseNode):
                 is_active=True,
                 inputs=["url"],
                 outputs=["response"],
-                workflow_node_type=NodeModelTypes.WebScraper,
             )
 
     async def execute(self, input: dict) -> dict:

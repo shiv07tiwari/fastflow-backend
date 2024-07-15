@@ -6,3 +6,4 @@ class NodeModelTypes:
     FileReader = 'file_reader'
     ResumeAnalysis = 'resume_analysis'
     SummarizerNode = 'summarizer'
+    ZipReaderNode = 'zip_reader'

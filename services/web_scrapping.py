@@ -43,6 +43,9 @@ def _smart_scroll(page, timeout):
 
 @cache_response()
 def scrape_website_content(url: str, timeout=30000):
+    if not url or not url.startswith("http"):
+        print(f"Invalid URL for scrapping: {url}")
+        return None
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
