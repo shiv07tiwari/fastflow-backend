@@ -1,7 +1,9 @@
 import json
+import re
 
 from nodes.base_node import BaseNode
 from services import GeminiService
+from services.google import get_urls_for_search_query
 from services.web_scrapping import scrape_website_content
 from fastapi.concurrency import run_in_threadpool
 
@@ -10,24 +12,18 @@ The following is the resume of a candidate applying for a job as a software engi
 Your task is to extract some key information from the resume and answer the following questions:
 
 1. What is the candidate's name?
-2. What is the candidate's github profile URL? Make sure it is a valid Github URL, if not present return None
-3. What is the candidate's linkedin profile?
+2. What is the candidate's current employer? Only return the name of the employer.
 4. Summarize and return a list of candidates work experience.
 5. Summarize and return a list of candidates skills.
-6. What is the candidate's portfolio website? If not present return None
-7. Has he linked any projects in his resume. If yes, give a valid URL to one of the projects.
 
 Return the answers in a dictionary with the following keys:
 - name
-- github
-- linkedin
+- current_employer
 - work_experience
 - skills
-- portfolio
-- project
 
 Please format the response to not contain any next lines or special characters.
-ENSURE THAT THE RESPONSE IS IN JSON FORMAT WHICH CAN BE PARSED BY PYTHON USING json.loads()
+ENSURE THAT THE RESPONSE IS IN JSON FORMAT WHICH CAN BE PARSED BY PYTHON USING json.loads(). Do not add anything extra to the response.
 
 The resume is as follows:
 \\\
@@ -50,19 +46,21 @@ GITHUB INFORMATION:
 {github}
 \\\
 
-PORTFOLIO INFORMATION:
-\\\
-{portfolio}
-\\\
-
-PROJECT INFORMATION:
-\\\
-{project}
-\\\
-
 Additional Instructions:
 {instructions}
 """
+
+
+def is_github_profile_url(url):
+    regex = r"^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$"
+    return bool(re.match(regex, url))
+
+def is_portfolio_url(url):
+    # TODO: How?
+    return False
+
+def is_linkedin_url(url):
+    return False
 
 
 class ResumeAnalysisNode(BaseNode):
@@ -82,27 +80,29 @@ class ResumeAnalysisNode(BaseNode):
     async def _process_resume(self, file_content, instructions):
         gemini_service = GeminiService()
         formatted_prompt = EXTRACTOR_PROMPT.format(resume=file_content, instructions=instructions)
-        extracted_information = await gemini_service.generate_cached_response(formatted_prompt, name="resume_analysis",
+        extracted_information = await gemini_service.generate_response(formatted_prompt, name="resume_analysis",
                                                                               stream=False)
         extracted_information_json = json.loads(extracted_information)
 
-        github_url = extracted_information_json.get("github")
-        linkedin_url = extracted_information_json.get("linkedin")
-        portfolio_url = extracted_information_json.get("portfolio")
-        project_url = extracted_information_json.get("project")
+        name = extracted_information_json.get("name")
+        current_employer = extracted_information_json.get("current_employer")
+
+        google_search_text = f"{name} {current_employer} Github"
+        urls = get_urls_for_search_query(google_search_text)
+
+        github_url = None
+        for url in urls:
+            if is_github_profile_url(url):
+                github_url = url
+                break
 
         github_data = await run_in_threadpool(scrape_website_content, github_url, 30000)
 
-        portfolio_data = await run_in_threadpool(scrape_website_content, portfolio_url, 30000)
-
-        project_data = await run_in_threadpool(scrape_website_content, project_url, 30000)
-
         resume_data = extracted_information_json["work_experience"] + extracted_information_json["skills"]
-        consolidator_prompt = CONSOLIDATOR_PROMPT.format(resume=resume_data, github=github_data,
-                                                         portfolio=portfolio_data, project=project_data)
+        consolidator_prompt = CONSOLIDATOR_PROMPT.format(resume=resume_data, github=github_data, instructions=instructions)
         response = await gemini_service.generate_response(consolidator_prompt, name="resume_analysis", stream=False)
 
-        return response, [github_url, linkedin_url, portfolio_url, project_url]
+        return response, [github_url]
 
     async def execute(self, input: dict) -> dict:
         file_output = input.get("input_resume")

@@ -37,7 +37,11 @@ class GeminiNode(BaseNode):
         prompt = input.get("prompt")
         formatted_prompt = self.format_prompt(prompt, input)
 
-        response = await service.generate_response(prompt=formatted_prompt, name=self.name, stream=None)
+        try:
+            response = await service.generate_response(prompt=formatted_prompt, name=self.name, stream=None)
+        except Exception as e:
+            print(f"Error in executing node {self.name}: {e}")
+            raise e
         return {
             "response": response
         }

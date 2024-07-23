@@ -48,8 +48,9 @@ def cache_response(timeout=86400):  # Default timeout set to 1 day (in seconds)
 
             # Calculate result and cache it
             result = await func(*args, **kwargs)
-            redis_client.setex(cache_key, timeout, result)  # No clue why this shows coroutine not awaited
-            print(f"Cache set - {cache_key}")
+            if result:
+                redis_client.setex(cache_key, timeout, result)  # No clue why this shows coroutine not awaited
+                print(f"Cache set - {cache_key}")
             return result
 
         @functools.wraps(func)
@@ -69,8 +70,9 @@ def cache_response(timeout=86400):  # Default timeout set to 1 day (in seconds)
 
             # Calculate result and cache it
             result = func(*args, **kwargs)
-            redis_client.setex(cache_key, timeout, result)
-            print(f"Cache set - {cache_key}")
+            if result:
+                redis_client.setex(cache_key, timeout, result)
+                print(f"Cache set - {cache_key}")
             return result
 
         if asyncio.iscoroutinefunction(func):
