@@ -7,3 +7,4 @@ class NodeModelTypes:
     ResumeAnalysis = 'resume_analysis'
     SummarizerNode = 'summarizer'
     ZipReaderNode = 'zip_reader'
+    RedditBotNode = 'reddit_bot'

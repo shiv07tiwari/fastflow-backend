@@ -4,6 +4,7 @@ from databases.controller import DatabaseController
 from nodes.combine_text import CombineTextNode
 from nodes.file_reader import FileReader
 from nodes.gemini import GeminiNode
+from nodes.reddit_bot import RedditBotNode
 from nodes.resume_analysis import ResumeAnalysisNode
 from nodes.summarizer import SummarizerNode
 from nodes.user_input import UserInputNode
@@ -26,9 +27,10 @@ class Fixtures:
         resume_analysis_node = ResumeAnalysisNode()
         summarize_node = SummarizerNode()
         zip_reader_node = ZipReaderNode()
+        reddit_node = RedditBotNode()
 
         nodes = [gemini_node, combine_text_node, web_scrapper_node, user_input_node, file_reader_node,
-                 resume_analysis_node, summarize_node, zip_reader_node]
+                 resume_analysis_node, summarize_node, zip_reader_node, reddit_node]
 
         for node in nodes:
             self.db_controller.insert(Tables.Node, node.to_dict(), document_id=node.id)
