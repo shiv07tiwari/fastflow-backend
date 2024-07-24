@@ -10,7 +10,6 @@ class WorkflowSchema(BaseModel):
     owner: str
     nodes: List[str] = []  # Store individual nodes
     edges: List[Dict[str, str]] = []  # Store edges (source, target, sourceHandle)
-    adj_list: Dict[str, List[Dict[str, str]]] = {}  # Store adjacency list with handles
 
     def __str__(self):
         return f"{self.name} - {self.description or 'No description'}"

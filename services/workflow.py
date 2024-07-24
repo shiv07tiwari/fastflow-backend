@@ -1,17 +1,61 @@
+import datetime
+import uuid
 from typing import Dict, List
 
 from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
+from databases.repository.workflow_run import WorkflowRunRepository
 from workflows.base_workflow import WorkflowSchema
 from workflows.workflow_node import WorkFlowNode
+from workflows.workflow_run import WorkflowRun
 
 
 class WorkflowService:
+    workflow_repo = WorkflowRepository()
+    workflow_node_repo = WorkflowNodeRepository()
+    workflow_run_repo = WorkflowRunRepository()
+
+    def __init__(self):
+        pass
+
+    async def update_workflow_post_execution(self, workflow, nodes: List[str], edges):
+        workflow.set_edges(edges)
+        workflow.set_nodes(nodes)
+        self.workflow_repo.add_or_update(workflow)
+
+    async def update_nodes_post_execution(self, workflow_id, updated_nodes):
+        updated_node_ids = [node.id for node in updated_nodes]
+        original_nodes = self.workflow_node_repo.fetch_all_by_workflow_id(workflow_id)
+
+        # Update or create new nodes
+        for node in updated_nodes:
+            node.workflow = workflow_id
+            # Remove all keys from node.available_inputs that contain input in the key
+            node.available_inputs = {k: v for k, v in node.available_inputs.items() if "input" not in k}
+            self.workflow_node_repo.add_or_update(node.id, node.to_dict())
+
+        # Soft delete nodes that are not in the updated list
+        for node in original_nodes:
+            if node.id not in updated_node_ids:
+                node.is_deleted = True
+                node.workflow = None
+                self.workflow_node_repo.add_or_update(node.id, node.to_dict())
+
+    async def create_workflow_run(self, workflow_id: str, nodes: list[WorkFlowNode], edges: list, executed_at) -> str:
+        id = uuid.uuid4().hex
+        # Convert nodes to a List[Dict[str, List[str]]]
+        nodes = [node.to_dict() for node in nodes]
+        workflow_run = WorkflowRun(id=id, workflow_id=workflow_id, nodes=nodes, edges=edges, executed_at=executed_at)
+        self.workflow_run_repo.add_or_update(workflow_run)
+        return workflow_run.id
+
+class WorkflowExecutorService:
     workflow = WorkflowSchema
     node_mapping: Dict[str, WorkFlowNode] = {}  # Store mapping of node id to node object
     adj_list: Dict[str, List[Dict[str, str]]] = {}  # Store adjacency list with handles
     input_edges: List[Dict[str, str]] = []
     execution_order = []
+    workflow_service = WorkflowService()
 
     def __init__(self, workflow: WorkflowSchema):
         self.workflow = workflow
@@ -114,6 +158,7 @@ class WorkflowService:
         Thus might as well pass the nodes from the frontend
         :return:
         """
+        execution_started_at = datetime.datetime.now().timestamp() * 1000
         workflow_nodes = [WorkFlowNode(**node) for node in nodes]
         self.node_mapping = {node.id: node for node in workflow_nodes}
         self.input_edges = edges
@@ -128,5 +173,12 @@ class WorkflowService:
 
         # Sort node mapping by execution order
         self.node_mapping = {node_id: self.node_mapping[node_id] for node_id in self.execution_order}
-        return self.node_mapping
 
+        # TODO: Do the following in a background task
+        updated_nodes = list(self.node_mapping.values())
+        updated_node_ids = [node.id for node in updated_nodes]
+        await self.workflow_service.update_workflow_post_execution(self.workflow, updated_node_ids, edges)
+        await self.workflow_service.update_nodes_post_execution(self.workflow.id, updated_nodes)
+        await self.workflow_service.create_workflow_run(self.workflow.id, list(self.node_mapping.values()), edges, execution_started_at)
+
+        return self.node_mapping

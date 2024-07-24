@@ -34,3 +34,5 @@ class Fixtures:
 
         for node in nodes:
             self.db_controller.insert(Tables.Node, node.to_dict(), document_id=node.id)
+
+        self.db_controller.clear_table(Tables.WorkflowRun)

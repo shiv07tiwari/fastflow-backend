@@ -4,6 +4,9 @@ from nodes.base_node import BaseNode
 
 
 class NodeRepository:
+    """
+    This is BaseNode Repository. TODO: Rename to BaseNodeRepository
+    """
     db_controller: DatabaseController
     table: str
 

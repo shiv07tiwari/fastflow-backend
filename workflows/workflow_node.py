@@ -14,6 +14,7 @@ class WorkFlowNode(BaseModel):
     outputs: dict | None = {}
     input_handles: List[str] | None = []
     output_handles: List[str] | None = []
+    is_deleted: bool = False
 
     def to_dict(self) -> dict:
         return self.__dict__

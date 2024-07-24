@@ -10,7 +10,9 @@ from databases.fixtures import Fixtures
 from databases.repository.node import NodeRepository
 from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
-from services.workflow import WorkflowService
+from databases.repository.workflow_run import WorkflowRunRepository
+from services.utils import format_input_edges
+from services.workflow import WorkflowExecutorService, WorkflowService
 from workflows.base_workflow_dto import WorkflowResponseDTO
 import google.generativeai as genai
 
@@ -56,49 +58,16 @@ async def run_workflow(request: WorkflowRunRequest):
 
     This currently only supports serial execution of the workflow
     """
+    workflow_service = WorkflowService()
+
     workflow_id = request.id
-    nodes = request.nodes
-    edges = request.edges
 
-    formatted_edges = []
-    for edge in edges:
-        edge_output = {
-            **edge,
-            "outputHandle": edge.get('sourceHandle', "response"),
-            "inputHandle": edge.get('targetHandle', None)
-        }
-        # Remove all keys that are not string or are not required
-        edge_output.pop('sourceHandle', None)
-        edge_output.pop('targetHandle', None)
-        edge_output = {k: v for k, v in edge_output.items() if isinstance(v, str)}
-
-        formatted_edges.append(edge_output)
+    formatted_edges = format_input_edges(request.edges)
 
     workflow = WorkflowRepository().fetch_by_id(workflow_id)
-    workflow_service = WorkflowService(workflow=workflow)
-    mapping = await workflow_service.execute(nodes, formatted_edges)
-
-    # Update the workflow with the new nodes and edges
-    workflow_repo = WorkflowRepository()
-    node_repo = WorkflowNodeRepository()
-
-    original_nodes = WorkflowNodeRepository().fetch_all_by_workflow_id(workflow_id)
-    updated_nodes = list(mapping.values())
-    updated_node_ids = [node.id for node in updated_nodes]
-
-    workflow.set_edges(formatted_edges)
-    workflow.set_nodes(updated_node_ids)
-    workflow_repo.add_or_update(workflow)
-
-    for node in updated_nodes:
-        node.workflow = workflow_id
-        # Remove all keys from node.available_inputs that contain input in the key
-        node.available_inputs = {k: v for k, v in node.available_inputs.items() if "input" not in k}
-        node_repo.add_or_update(node.id, node.to_dict())
-
-    for node in original_nodes:
-        if node.id not in updated_node_ids:
-            node_repo.delete(node.id)
+    workflow_executor_service = WorkflowExecutorService(workflow=workflow)
+    # Workflow is executed and the mapping of node_id to node is returned
+    mapping = await workflow_executor_service.execute(request.nodes, formatted_edges)
 
     response = []
     for node_id, node in mapping.items():
@@ -129,3 +98,13 @@ Fixtures().add_test_data(1)
 async def get_nodes():
     nodes = NodeRepository().fetch_all()
     return nodes
+
+@app.get("/workflow/{workflow_id}/runs")
+async def get_workflow_runs(workflow_id: str):
+    """
+    Get all runs for a workflow
+    :param workflow_id: str
+    :return:  Response
+    """
+    workflow_runs = WorkflowRunRepository().fetch_by_workflow_id(workflow_id)
+    return workflow_runs

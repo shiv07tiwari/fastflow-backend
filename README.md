@@ -18,3 +18,10 @@
 
 This will cache the responses from Web Scraping and Gemini API
 If redis is not running, the server will still work but it will not cache the responses
+
+
+## Reddit Scrapping
+
+Set the following env variables
+- REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USER_AGENT, REDDIT_USERNAME, REDDIT_PASSWORD
+- [Go to reddit, create a new app and get the credentials. Set the usage to personal use script](https://www.reddit.com/prefs/apps)

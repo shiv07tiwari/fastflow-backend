@@ -7,6 +7,7 @@ class Tables:
     WorkflowSchema = "workflow_schema"
     WorkFlowNode = "workflow_node"
     Node = "node"
+    WorkflowRun = "workflow_run"
 
 
 class QueryOperations:
