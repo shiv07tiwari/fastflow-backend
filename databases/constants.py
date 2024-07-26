@@ -1,5 +1,5 @@
 from nodes import combine_text, user_input, gemini, web_scraper, file_reader, resume_analysis, summarizer, zip_reader, \
-    reddit_bot
+    reddit_bot, company_enrichment
 from nodes.constants import NodeModelTypes
 
 
@@ -38,6 +38,6 @@ NodeTypeClassMappings = {
     NodeModelTypes.ResumeAnalysis: resume_analysis.ResumeAnalysisNode,
     NodeModelTypes.SummarizerNode: summarizer.SummarizerNode,
     NodeModelTypes.ZipReaderNode: zip_reader.ZipReaderNode,
-    NodeModelTypes.RedditBotNode: reddit_bot.RedditBotNode
-
+    NodeModelTypes.RedditBotNode: reddit_bot.RedditBotNode,
+    NodeModelTypes.CompanyEnrichmentNode: company_enrichment.CompanyEnrichmentNode
 }

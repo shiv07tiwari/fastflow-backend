@@ -1,4 +1,4 @@
-from nodes.base_node import BaseNode
+from nodes.base_node import BaseNode, BaseNodeInput, InputType
 from services.file_reader import extract_text_from_pdf, extract_data_from_csv
 from services.utils import extract_links
 
@@ -8,6 +8,9 @@ class FileReader(BaseNode):
         if kwargs:
             super().__init__(**kwargs)
         else:
+            inputs = [
+                BaseNodeInput("file_path", InputType.INTERNAL_ONLY, "file"),
+            ]
             super().__init__(
                 id='file_reader',
                 name="File Reader",
@@ -15,7 +18,7 @@ class FileReader(BaseNode):
                 description="Reads a file from disk and processes based on file type",
                 node_type="ai",
                 is_active=True,
-                inputs=["file_path"],
+                inputs=inputs,
                 outputs=["response", "links"],
                 workflow_node_name="file_reader",
                 **kwargs

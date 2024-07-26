@@ -17,7 +17,7 @@ class UserInputNode(BaseNode):
                 description="Accepts an input from user",
                 node_type="input",
                 is_active=True,
-                inputs=["input"],
+                inputs=[],
                 outputs=["response"],
                 **kwargs
             )

@@ -14,7 +14,6 @@ class WorkflowResponseDTO:
     nodes: List[WorkFlowNode]
     edges: List[Dict[str, str]]
     description: Optional[str] = None
-    input_handles: Optional[List[str]] = None
     output_handles: Optional[List[str]] = None
 
     def to_dict(self) -> dict:

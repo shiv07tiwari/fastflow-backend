@@ -1,6 +1,6 @@
 import io
 import zipfile
-from nodes.base_node import BaseNode
+from nodes.base_node import BaseNode, BaseNodeInput, InputType
 from services.file_reader import extract_data_from_csv, extract_text_from_pdf
 
 
@@ -9,6 +9,9 @@ class ZipReaderNode(BaseNode):
         if kwargs:
             super().__init__(**kwargs)
         else:
+            inputs = [
+                BaseNodeInput("file_path", InputType.COMMON, "file"),
+            ]
             super().__init__(
                 id='zip_reader',
                 name="ZIP Reader",
@@ -16,7 +19,7 @@ class ZipReaderNode(BaseNode):
                 description="Reads a ZIP file from disk and extracts contents",
                 node_type="ai",
                 is_active=True,
-                inputs=["file_path"],
+                inputs=inputs,
                 outputs=["file_names", "file_contents"],
                 workflow_node_name="zip_reader",
                 **kwargs

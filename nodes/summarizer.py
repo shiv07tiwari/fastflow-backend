@@ -1,4 +1,4 @@
-from nodes.base_node import BaseNode
+from nodes.base_node import BaseNode, BaseNodeInput, InputType
 from services import GeminiService
 
 PROMPT = """
@@ -18,6 +18,9 @@ class SummarizerNode(BaseNode):
         if kwargs:
             super().__init__(**kwargs)
         else:
+            inputs = [
+                BaseNodeInput("input_content", InputType.COMMON, "text"),
+            ]
             super().__init__(
                 id='summarizer',
                 name="Summarizer",
@@ -25,7 +28,7 @@ class SummarizerNode(BaseNode):
                 description="Summarize a text using Gemini",
                 node_type="ai",
                 is_active=True,
-                inputs=["input_content"],
+                inputs=inputs,
                 outputs=["response"],
                 **kwargs
             )

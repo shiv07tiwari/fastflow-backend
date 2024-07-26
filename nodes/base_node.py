@@ -16,6 +16,25 @@ class NodeType(Enum):
     JOIN = "join"
 
 
+class InputType(Enum):
+    INTERNAL_ONLY = "internal"
+    EXTERNAL_ONLY = "external"
+    COMMON = "common"
+
+
+class BaseNodeInput(BaseModel):
+    key: str
+    handle_type: str
+    input_type: str  # What type of UI input is this (text, dropdown, etc)
+
+    def __init__(self, key: str, handle_type: InputType | str, input_type: str):
+        handle_type = handle_type if isinstance(handle_type, str) else handle_type.value
+        super().__init__(key=key, handle_type=handle_type, input_type=input_type)
+
+    def to_dict(self) -> dict:
+        return self.__dict__
+
+
 class BaseNode(BaseModel):
     """
     This is a single node in the workflow. Created by system.
@@ -28,7 +47,7 @@ class BaseNode(BaseModel):
     updated_at: str | None = None
     is_active: bool = True
     node_type: str
-    inputs: List[str] = []
+    inputs: List[BaseNodeInput] = []
     outputs: List[str] = []
 
     def execute(self, *args, **kwargs):

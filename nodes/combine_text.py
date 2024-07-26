@@ -1,7 +1,6 @@
 from pydantic import Field
 
-from nodes.base_node import BaseNode, NodeType
-from nodes.constants import NodeModelTypes
+from nodes.base_node import BaseNode, NodeType, BaseNodeInput, InputType
 
 
 class CombineTextNode(BaseNode):
@@ -11,6 +10,10 @@ class CombineTextNode(BaseNode):
         if kwargs:
             super().__init__(**kwargs)
         else:
+            inputs = [
+                BaseNodeInput("input_text_1", InputType.COMMON, "text"),
+                BaseNodeInput("input_text_2", InputType.COMMON, "text"),
+            ]
             super().__init__(
                 id='combine_text',
                 name="Combine Text",
@@ -18,7 +21,7 @@ class CombineTextNode(BaseNode):
                 description="Combine multiple text nodes into one",
                 node_type=NodeType.JOIN.value,
                 is_active=True,
-                inputs=["input_text_1", "input_text_2"],
+                inputs=inputs,
                 outputs=["combined_text"],
                 **kwargs
             )

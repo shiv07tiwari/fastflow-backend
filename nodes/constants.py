@@ -8,3 +8,4 @@ class NodeModelTypes:
     SummarizerNode = 'summarizer'
     ZipReaderNode = 'zip_reader'
     RedditBotNode = 'reddit_bot'
+    CompanyEnrichmentNode = 'company_enrichment'

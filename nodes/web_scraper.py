@@ -1,8 +1,5 @@
-from nodes.base_node import BaseNode, NodeType
-from fastapi.concurrency import run_in_threadpool
+from nodes.base_node import BaseNode, NodeType, BaseNodeInput, InputType
 
-
-from nodes.constants import NodeModelTypes
 from services.web_scrapping import scrape_website_content
 
 CHROME_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"  # noqa: E501
@@ -13,6 +10,9 @@ class WebScraperNode(BaseNode):
         if kwargs:
             super().__init__(**kwargs)
         else:
+            inputs = [
+                BaseNodeInput("url", InputType.COMMON, "url"),
+            ]
             super().__init__(
                 id='web_scraper',
                 name="Web Scraper",
@@ -20,7 +20,7 @@ class WebScraperNode(BaseNode):
                 description="Scrape a website",
                 node_type=NodeType.JOIN.value,
                 is_active=True,
-                inputs=["url"],
+                inputs=inputs,
                 outputs=["response"],
             )
 
@@ -32,7 +32,7 @@ class WebScraperNode(BaseNode):
             url = url[0]
 
         url = url.strip()
-        data = await run_in_threadpool(scrape_website_content, url, 30000)
+        data = await scrape_website_content(url, 30000)
         return {"response": data}
 
     def can_execute(self, inputs: dict) -> bool:

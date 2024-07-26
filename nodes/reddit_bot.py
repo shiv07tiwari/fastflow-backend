@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from nodes.base_node import BaseNode, NodeType
+from nodes.base_node import BaseNode, NodeType, BaseNodeInput, InputType
 from services.reddit import RedditService
 
 
@@ -10,6 +10,11 @@ class RedditBotNode(BaseNode):
         if kwargs:
             super().__init__(**kwargs)
         else:
+            inputs = [
+                BaseNodeInput("query", InputType.COMMON, "text"),
+                BaseNodeInput("subreddit", InputType.COMMON, "text"),
+                BaseNodeInput("post_limit", InputType.INTERNAL_ONLY, "text"),
+            ]
             super().__init__(
                 id='reddit_bot',
                 name="Reddit Bot",
@@ -17,7 +22,7 @@ class RedditBotNode(BaseNode):
                 description="Scrape data from reddit",
                 node_type=NodeType.AI.value,
                 is_active=True,
-                inputs=["subreddit", "query", "post_limit"],
+                inputs=inputs,
                 outputs=["post_titles", "post_contents", "post_urls"],
                 **kwargs
             )

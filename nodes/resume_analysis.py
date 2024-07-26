@@ -1,11 +1,10 @@
 import json
 import re
 
-from nodes.base_node import BaseNode
+from nodes.base_node import BaseNode, BaseNodeInput, InputType
 from services import GeminiService
 from services.google import get_urls_for_search_query
 from services.web_scrapping import scrape_website_content
-from fastapi.concurrency import run_in_threadpool
 
 EXTRACTOR_PROMPT = """
 The following is the resume of a candidate applying for a job as a software engineer.
@@ -66,6 +65,10 @@ def is_linkedin_url(url):
 class ResumeAnalysisNode(BaseNode):
 
     def __init__(self, **kwargs):
+        inputs = [
+            BaseNodeInput("input_resume", InputType.EXTERNAL_ONLY, "text"),
+            BaseNodeInput("instructions", InputType.INTERNAL_ONLY, "text"),
+        ]
         super().__init__(
             id='resume_analysis',
             name="Resume Analysis",
@@ -73,7 +76,7 @@ class ResumeAnalysisNode(BaseNode):
             description="Analyze a resume to extract key information",
             node_type="ai",
             is_active=True,
-            inputs=["input_resume", "instructions"],
+            inputs=inputs,
             outputs=["response", "links"],
         )
 
@@ -96,7 +99,7 @@ class ResumeAnalysisNode(BaseNode):
                 github_url = url
                 break
 
-        github_data = await run_in_threadpool(scrape_website_content, github_url, 30000)
+        github_data = await scrape_website_content(github_url, 30000)
 
         resume_data = extracted_information_json["work_experience"] + extracted_information_json["skills"]
         consolidator_prompt = CONSOLIDATOR_PROMPT.format(resume=resume_data, github=github_data, instructions=instructions)

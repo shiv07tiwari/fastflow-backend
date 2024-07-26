@@ -12,7 +12,8 @@ class WorkFlowNode(BaseModel):
     required_inputs: List[str] | None = []
     available_inputs: dict | None = {}
     outputs: dict | None = {}
-    input_handles: List[str] | None = []
+    external_input_handles: List[str] | None = []
+    internal_input_handles: List[str] | None = []
     output_handles: List[str] | None = []
     is_deleted: bool = False
 

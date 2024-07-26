@@ -7,11 +7,12 @@ SUPPORTED_DOMAINS = [
 ]
 
 
-def scrape_github_profile(url: str) -> dict:
-    return scrape_website_content(url)
+async def scrape_github_profile(url: str) -> dict:
+    return await scrape_website_content(url)
 
 
 class PortfolioReviewer(BaseNode):
+    # Not used
 
     def __init__(self, **kwargs):
         if kwargs:
@@ -37,7 +38,7 @@ class PortfolioReviewer(BaseNode):
             # Check if link contains a supported domain
             if any(domain in link for domain in SUPPORTED_DOMAINS):
                 if "github" in link:
-                    data = scrape_github_profile(link)
+                    data = await scrape_github_profile(link)
                     combined_data["github"] = data
                 else:
                     # Scrape LinkedIn profile

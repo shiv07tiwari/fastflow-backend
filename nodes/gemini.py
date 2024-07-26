@@ -1,4 +1,4 @@
-from nodes.base_node import BaseNode, NodeType
+from nodes.base_node import BaseNode, NodeType, BaseNodeInput, InputType
 from nodes.constants import NodeModelTypes
 from services import GeminiService
 
@@ -8,6 +8,11 @@ class GeminiNode(BaseNode):
         if kwargs:
             super().__init__(**kwargs)
         else:
+            inputs = [
+                BaseNodeInput("prompt", InputType.INTERNAL_ONLY, "text"),
+                BaseNodeInput("input_1", InputType.EXTERNAL_ONLY, "text"),
+                BaseNodeInput("input_2", InputType.EXTERNAL_ONLY, "text"),
+            ]
             super().__init__(
                 id='gemini',
                 name="Gemini",
@@ -15,7 +20,7 @@ class GeminiNode(BaseNode):
                 description="Generate a Response from Gemini AI",
                 node_type=NodeType.AI.value,
                 is_active=True,
-                inputs=["prompt", "input_1", "input_2"],
+                inputs=inputs,
                 outputs=["response"],
                 **kwargs
             )
