@@ -5,7 +5,7 @@ from typing import Dict, List
 from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
 from databases.repository.workflow_run import WorkflowRunRepository
-from workflows.base_workflow import WorkflowSchema
+from workflows.workflow_schema import WorkflowSchema
 from workflows.workflow_node import WorkFlowNode
 from workflows.workflow_run import WorkflowRun
 
@@ -18,7 +18,11 @@ class WorkflowService:
     def __init__(self):
         pass
 
-    async def update_workflow_post_execution(self, workflow, nodes: List[str], edges):
+    async def update_workflow_post_execution(self, workflow_id, nodes: List[str], edges):
+        workflow = WorkflowSchema(
+            name=f'Workflow-{workflow_id}',
+            owner='admin'
+        )
         workflow.set_edges(edges)
         workflow.set_nodes(nodes)
         self.workflow_repo.add_or_update(workflow)
@@ -51,15 +55,15 @@ class WorkflowService:
 
 
 class WorkflowExecutorService:
-    workflow = WorkflowSchema
+    workflow_id = WorkflowSchema
     node_mapping: Dict[str, WorkFlowNode] = {}  # Store mapping of node id to node object
     adj_list: Dict[str, List[Dict[str, str]]] = {}  # Store adjacency list with handles
     input_edges: List[Dict[str, str]] = []
     execution_order = []
     workflow_service = WorkflowService()
 
-    def __init__(self, workflow: WorkflowSchema):
-        self.workflow = workflow
+    def __init__(self, workflow_id: str):
+        self.workflow_id = workflow_id
         self.execution_order = []
         self.node_mapping = {}
         self.adj_list = {}
@@ -107,8 +111,8 @@ class WorkflowExecutorService:
             if input_data:
                 available_inputs.update(input_data)
 
-            print(f"Executing node: {base_node.name} for {self.workflow.name}")
-            print(f"Inputs: {available_inputs}")
+            print(f"executing node- {base_node.name} {node_id}")
+            print(f"Inputs: {available_inputs.keys()}")
 
             # Execute the current node and mark it as visited
             outputs = await base_node.execute(available_inputs)
@@ -118,11 +122,10 @@ class WorkflowExecutorService:
             visited.add(node_id)
 
             for neighbor_info in self.adj_list.get(node_id, []):
-                print(f"Neighbor: {neighbor_info}")
+                print(f"checking child: {neighbor_info}")
                 target_node_id = neighbor_info['target']
                 input_handle = neighbor_info['inputHandle']
                 output_handle = neighbor_info.get('outputHandle')
-                print(f"Target Node: {target_node_id} - Input Handle: {input_handle} - Output Handle: {output_handle}")
 
                 # Recursively gather inputs for each neighboring node
                 await self.gather_and_execute_neighbor(target_node_id, visited, input_handle,
@@ -149,6 +152,8 @@ class WorkflowExecutorService:
                     await self.execute_node(target_node_id, visited, target_node.available_inputs)
                 except ValueError as e:
                     print("ERROR: Failed to execute node:", e)
+            else:
+                print(f"not now: {target_node.get_node().name}")
 
     async def execute(self, nodes: list, edges: list) -> Dict[str, WorkFlowNode]:
         """
@@ -177,9 +182,9 @@ class WorkflowExecutorService:
         # TODO: Do the following in a background task
         updated_nodes = list(self.node_mapping.values())
         updated_node_ids = [node.id for node in updated_nodes]
-        await self.workflow_service.update_workflow_post_execution(self.workflow, updated_node_ids, edges)
-        await self.workflow_service.update_nodes_post_execution(self.workflow.id, updated_nodes)
-        await self.workflow_service.create_workflow_run(self.workflow.id, list(self.node_mapping.values()), edges,
+        await self.workflow_service.update_workflow_post_execution(self.workflow_id, updated_node_ids, edges)
+        await self.workflow_service.update_nodes_post_execution(self.workflow_id, updated_nodes)
+        await self.workflow_service.create_workflow_run(self.workflow_id, list(self.node_mapping.values()), edges,
                                                         execution_started_at)
 
         return self.node_mapping

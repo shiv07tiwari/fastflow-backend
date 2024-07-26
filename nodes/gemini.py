@@ -9,9 +9,13 @@ class GeminiNode(BaseNode):
             super().__init__(**kwargs)
         else:
             inputs = [
-                BaseNodeInput("prompt", InputType.INTERNAL_ONLY, "text"),
+                BaseNodeInput("prompt", InputType.INTERNAL_ONLY, "text", is_required=True),
                 BaseNodeInput("input_1", InputType.EXTERNAL_ONLY, "text"),
                 BaseNodeInput("input_2", InputType.EXTERNAL_ONLY, "text"),
+                BaseNodeInput("input_3", InputType.EXTERNAL_ONLY, "text"),
+                BaseNodeInput("input_1_index", InputType.CONFIG, "number"),
+                BaseNodeInput("input_2_index", InputType.CONFIG, "number"),
+                BaseNodeInput("input_3_index", InputType.CONFIG, "number"),
             ]
             super().__init__(
                 id='gemini',
@@ -25,22 +29,10 @@ class GeminiNode(BaseNode):
                 **kwargs
             )
 
-    def format_prompt(self, prompt: str, input: dict) -> str:
-        # Filter out keys that are in self.inputs and not in the prompt
-        formatted_input = {k: v for k, v in input.items()
-                           if k in self.inputs and f"{{{k}}}" in prompt}
-
-        # Use ** to unpack the dictionary as keyword arguments
-        return prompt.format(**formatted_input)
-
     async def execute(self, input: dict) -> {}:
         service = GeminiService()
-        for keys in self.inputs:
-            if keys not in input:
-                print("WARNING: ", keys, " not in input")
-
         prompt = input.get("prompt")
-        formatted_prompt = self.format_prompt(prompt, input)
+        formatted_prompt = prompt.format(**input)
 
         try:
             response = await service.generate_response(prompt=formatted_prompt, name=self.name, stream=None)
@@ -52,7 +44,7 @@ class GeminiNode(BaseNode):
         }
 
     def can_execute(self, inputs: dict) -> bool:
-        for input_key in self.inputs:
+        for input_key in [id for id in self.inputs]:
             if input_key not in inputs or not inputs[input_key]:
                 return False
         return True

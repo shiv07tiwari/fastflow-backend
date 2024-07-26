@@ -19,7 +19,7 @@ class SummarizerNode(BaseNode):
             super().__init__(**kwargs)
         else:
             inputs = [
-                BaseNodeInput("input_content", InputType.COMMON, "text"),
+                BaseNodeInput("input_content", InputType.COMMON, "text", is_required=True),
             ]
             super().__init__(
                 id='summarizer',

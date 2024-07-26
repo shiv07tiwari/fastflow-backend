@@ -20,16 +20,18 @@ class InputType(Enum):
     INTERNAL_ONLY = "internal"
     EXTERNAL_ONLY = "external"
     COMMON = "common"
+    CONFIG = "config"
 
 
 class BaseNodeInput(BaseModel):
     key: str
     handle_type: str
     input_type: str  # What type of UI input is this (text, dropdown, etc)
+    is_required: bool
 
-    def __init__(self, key: str, handle_type: InputType | str, input_type: str):
+    def __init__(self, key: str, handle_type: InputType | str, input_type: str, is_required: bool = False):
         handle_type = handle_type if isinstance(handle_type, str) else handle_type.value
-        super().__init__(key=key, handle_type=handle_type, input_type=input_type)
+        super().__init__(key=key, handle_type=handle_type, input_type=input_type, is_required=is_required)
 
     def to_dict(self) -> dict:
         return self.__dict__

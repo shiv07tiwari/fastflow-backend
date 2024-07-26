@@ -26,6 +26,11 @@ class WorkflowNodeRepository:
         return WorkFlowNode(**node_dict)
 
     def add_or_update(self, node_id, data):
+        # Data contains external_inputs, internal_inputs, common_inputs
+        # Convert them to dict
+        data['external_inputs'] = [input.to_dict() for input in data['external_inputs']]
+        data['internal_inputs'] = [input.to_dict() for input in data['internal_inputs']]
+        data['common_inputs'] = [input.to_dict() for input in data['common_inputs']]
         self.db_controller.insert(self.table, data, node_id)
 
     def delete(self, node_id):

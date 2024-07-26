@@ -11,7 +11,7 @@ class CombineTextNode(BaseNode):
             super().__init__(**kwargs)
         else:
             inputs = [
-                BaseNodeInput("input_text_1", InputType.COMMON, "text"),
+                BaseNodeInput("input_text_1", InputType.COMMON, "text", is_required=True),
                 BaseNodeInput("input_text_2", InputType.COMMON, "text"),
             ]
             super().__init__(

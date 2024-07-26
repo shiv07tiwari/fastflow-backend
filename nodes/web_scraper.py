@@ -11,7 +11,7 @@ class WebScraperNode(BaseNode):
             super().__init__(**kwargs)
         else:
             inputs = [
-                BaseNodeInput("url", InputType.COMMON, "url"),
+                BaseNodeInput("url", InputType.COMMON, "url", is_required=True),
             ]
             super().__init__(
                 id='web_scraper',

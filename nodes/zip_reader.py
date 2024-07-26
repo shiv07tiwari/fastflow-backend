@@ -10,7 +10,7 @@ class ZipReaderNode(BaseNode):
             super().__init__(**kwargs)
         else:
             inputs = [
-                BaseNodeInput("file_path", InputType.COMMON, "file"),
+                BaseNodeInput("file_path", InputType.COMMON, "file", is_required=True),
             ]
             super().__init__(
                 id='zip_reader',

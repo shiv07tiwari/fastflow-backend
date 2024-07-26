@@ -3,19 +3,22 @@ from typing import List
 from pydantic import BaseModel
 
 from databases.repository.node import NodeRepository
+from nodes.base_node import BaseNodeInput
 
 
 class WorkFlowNode(BaseModel):
     id: str | None = None
+    name: str = "Node"
     node: str = None
     workflow: str | None = None
-    required_inputs: List[str] | None = []
     available_inputs: dict | None = {}
     outputs: dict | None = {}
-    external_input_handles: List[str] | None = []
-    internal_input_handles: List[str] | None = []
     output_handles: List[str] | None = []
     is_deleted: bool = False
+    external_inputs: List[BaseNodeInput]
+    internal_inputs: List[BaseNodeInput]
+    common_inputs: List[BaseNodeInput]
+    position: dict | None = {}
 
     def to_dict(self) -> dict:
         return self.__dict__
@@ -28,13 +31,8 @@ class WorkFlowNode(BaseModel):
         base_node = self.get_node()
         base_node_inputs = base_node.inputs
 
-        # Ensure that all base node inputs are available and required
         for input in base_node_inputs:
-            if input not in self.required_inputs:
-                raise ValueError(f"{input} is missing for {self.id}")
-
-        for input in base_node_inputs:
-            if input not in self.available_inputs:
+            if input.is_required and input.key not in self.available_inputs:
                 return False
 
         return True

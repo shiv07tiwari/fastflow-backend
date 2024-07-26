@@ -9,7 +9,7 @@ class FileReader(BaseNode):
             super().__init__(**kwargs)
         else:
             inputs = [
-                BaseNodeInput("file_path", InputType.INTERNAL_ONLY, "file"),
+                BaseNodeInput("file_path", InputType.INTERNAL_ONLY, "file", is_required=True),
             ]
             super().__init__(
                 id='file_reader',

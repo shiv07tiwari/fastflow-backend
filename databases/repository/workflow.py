@@ -1,6 +1,6 @@
 from databases.constants import Tables
 from databases.controller import DatabaseController
-from workflows.base_workflow import WorkflowSchema
+from workflows.workflow_schema import WorkflowSchema
 
 
 class WorkflowRepository:
@@ -17,3 +17,5 @@ class WorkflowRepository:
 
     def add_or_update(self, workflow: WorkflowSchema):
         self.db_controller.insert(self.table, workflow.dict(), workflow.id)
+
+

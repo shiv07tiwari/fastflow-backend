@@ -1,5 +1,3 @@
-from pydantic import Field
-
 from nodes.base_node import BaseNode, NodeType, BaseNodeInput, InputType
 from services.reddit import RedditService
 
@@ -11,7 +9,7 @@ class RedditBotNode(BaseNode):
             super().__init__(**kwargs)
         else:
             inputs = [
-                BaseNodeInput("query", InputType.COMMON, "text"),
+                BaseNodeInput("query", InputType.COMMON, "text", is_required=True),
                 BaseNodeInput("subreddit", InputType.COMMON, "text"),
                 BaseNodeInput("post_limit", InputType.INTERNAL_ONLY, "text"),
             ]

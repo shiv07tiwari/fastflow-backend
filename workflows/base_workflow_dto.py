@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Dict
 
 from services.utils import format_output_edges
-from workflows.base_workflow import WorkflowSchema
+from workflows.workflow_schema import WorkflowSchema
 from workflows.workflow_node import WorkFlowNode
 
 

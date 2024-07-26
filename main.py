@@ -62,8 +62,7 @@ async def run_workflow(request: WorkflowRunRequest):
 
     formatted_edges = format_input_edges(request.edges)
 
-    workflow = WorkflowRepository().fetch_by_id(workflow_id)
-    workflow_executor_service = WorkflowExecutorService(workflow=workflow)
+    workflow_executor_service = WorkflowExecutorService(workflow_id=workflow_id)
     # Workflow is executed and the mapping of node_id to node is returned
     mapping = await workflow_executor_service.execute(request.nodes, formatted_edges)
 

@@ -66,7 +66,7 @@ class ResumeAnalysisNode(BaseNode):
 
     def __init__(self, **kwargs):
         inputs = [
-            BaseNodeInput("input_resume", InputType.EXTERNAL_ONLY, "text"),
+            BaseNodeInput("input_resume", InputType.EXTERNAL_ONLY, "text", is_required=True),
             BaseNodeInput("instructions", InputType.INTERNAL_ONLY, "text"),
         ]
         super().__init__(

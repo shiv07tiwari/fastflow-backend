@@ -12,7 +12,7 @@ class DatabaseController:
 
     def insert(self, table: str, data: dict, document_id: str = None):
         db_collection = self.db.collection(table)
-        if id is None:
+        if document_id is None:
             db_collection.add(data)
         else:
             db_collection.document(document_id).set(data)

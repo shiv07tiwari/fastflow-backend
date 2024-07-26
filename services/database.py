@@ -2,7 +2,7 @@ from nodes.combine_text import CombineTextNode
 from nodes.gemini import GeminiNode
 from nodes.web_scraper import WebScraperNode
 from workflows.workflow_node import WorkFlowNode
-from workflows.base_workflow import WorkflowSchema
+from workflows.workflow_schema import WorkflowSchema
 
 
 class DataBase:

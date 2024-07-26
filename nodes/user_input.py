@@ -1,4 +1,4 @@
-from nodes.base_node import BaseNode
+from nodes.base_node import BaseNode, BaseNodeInput, InputType
 from nodes.constants import NodeModelTypes
 
 
@@ -10,6 +10,9 @@ class UserInputNode(BaseNode):
         if kwargs:
             super().__init__(**kwargs)
         else:
+            inputs = [
+                BaseNodeInput("input", InputType.COMMON, "text", is_required=True),
+            ]
             super().__init__(
                 id='user_input',
                 name="User Input",
@@ -17,12 +20,12 @@ class UserInputNode(BaseNode):
                 description="Accepts an input from user",
                 node_type="input",
                 is_active=True,
-                inputs=[],
+                inputs=inputs,
                 outputs=["response"],
                 **kwargs
             )
 
-    def execute(self, input: dict) -> dict:
+    async def execute(self, input: dict) -> dict:
         return {"response": input.get("input")}
 
     def can_execute(self, inputs: dict) -> bool:

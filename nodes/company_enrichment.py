@@ -23,7 +23,7 @@ class CompanyEnrichmentNode(BaseNode):
 
     def __init__(self, **kwargs):
         inputs = [
-            BaseNodeInput("company_name", InputType.COMMON, "text"),
+            BaseNodeInput("company_name", InputType.COMMON, "text", is_required=True),
             BaseNodeInput("company_url", InputType.COMMON, "text"),
         ]
         super().__init__(

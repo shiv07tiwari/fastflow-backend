@@ -4,10 +4,10 @@ from pydantic import BaseModel
 
 class WorkflowSchema(BaseModel):
     """This is the schema for a workflow. Created by user."""
-    id: str
-    name: str
+    id: str | None = None
+    name: str | None = None
     description: Optional[str] = None
-    owner: str
+    owner: str | None = None
     nodes: List[str] = []  # Store individual nodes
     edges: List[Dict[str, str]] = []  # Store edges (source, target, sourceHandle)
 
