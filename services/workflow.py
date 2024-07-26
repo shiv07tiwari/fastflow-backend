@@ -49,6 +49,7 @@ class WorkflowService:
         self.workflow_run_repo.add_or_update(workflow_run)
         return workflow_run.id
 
+
 class WorkflowExecutorService:
     workflow = WorkflowSchema
     node_mapping: Dict[str, WorkFlowNode] = {}  # Store mapping of node id to node object
@@ -133,8 +134,7 @@ class WorkflowExecutorService:
         """
         if target_node_id not in visited:
             target_node = self.node_mapping[target_node_id]
-            target_available_inputs = target_node.available_inputs
-            target_available_inputs[input_handle] = edge_output
+            target_node.available_inputs[input_handle] = edge_output
 
             try:
                 can_execute = target_node.can_execute()
@@ -142,11 +142,11 @@ class WorkflowExecutorService:
                 can_execute = True
                 print("ERROR: Failed to fetch can execute:", e)
 
-            print("can execute:", target_node.get_node().name, can_execute, target_available_inputs)
+            print("can execute:", target_node.get_node().name, can_execute, target_node.available_inputs)
 
             if can_execute:
                 try:
-                    await self.execute_node(target_node_id, visited, target_available_inputs)
+                    await self.execute_node(target_node_id, visited, target_node.available_inputs)
                 except ValueError as e:
                     print("ERROR: Failed to execute node:", e)
 
@@ -179,6 +179,7 @@ class WorkflowExecutorService:
         updated_node_ids = [node.id for node in updated_nodes]
         await self.workflow_service.update_workflow_post_execution(self.workflow, updated_node_ids, edges)
         await self.workflow_service.update_nodes_post_execution(self.workflow.id, updated_nodes)
-        await self.workflow_service.create_workflow_run(self.workflow.id, list(self.node_mapping.values()), edges, execution_started_at)
+        await self.workflow_service.create_workflow_run(self.workflow.id, list(self.node_mapping.values()), edges,
+                                                        execution_started_at)
 
         return self.node_mapping

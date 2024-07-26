@@ -66,3 +66,6 @@ class CompanyEnrichmentNode(BaseNode):
             "summary": response,
             "primary_industry": ""
         }
+
+    async def can_execute(self, *args, **kwargs):
+        return True

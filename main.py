@@ -12,7 +12,7 @@ from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
 from databases.repository.workflow_run import WorkflowRunRepository
 from services.utils import format_input_edges
-from services.workflow import WorkflowExecutorService, WorkflowService
+from services.workflow import WorkflowExecutorService
 from workflows.base_workflow_dto import WorkflowResponseDTO
 import google.generativeai as genai
 
@@ -58,8 +58,6 @@ async def run_workflow(request: WorkflowRunRequest):
 
     This currently only supports serial execution of the workflow
     """
-    workflow_service = WorkflowService()
-
     workflow_id = request.id
 
     formatted_edges = format_input_edges(request.edges)
@@ -98,6 +96,7 @@ Fixtures().add_test_data(1)
 async def get_nodes():
     nodes = NodeRepository().fetch_all()
     return nodes
+
 
 @app.get("/workflow/{workflow_id}/runs")
 async def get_workflow_runs(workflow_id: str):

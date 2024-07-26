@@ -38,5 +38,3 @@ class WorkFlowNode(BaseModel):
                 return False
 
         return True
-
-
