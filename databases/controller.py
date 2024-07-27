@@ -5,6 +5,7 @@ from google.cloud.firestore_v1.base_query import FieldFilter
 from databases import base
 from databases.constants import QueryOperations
 
+
 class DatabaseController:
     def __init__(self):
         self.db = base.db
@@ -79,3 +80,16 @@ class DatabaseController:
             print(f"Error downloading file: {e}")
             raise Exception("Failed to download file from Firebase Storage")
 
+    def upload_to_firebase(self, file_path):
+        try:
+            blob = self.bucket.blob(file_path)
+            blob.upload_from_filename(file_path)
+
+            # Optionally, make the file publicly accessible
+            blob.make_public()
+
+            # Return the public url
+            return blob.public_url
+        except Exception as e:
+            print(f"Error uploading file: {e}")
+            raise Exception("Failed to upload file to Firebase Storage")

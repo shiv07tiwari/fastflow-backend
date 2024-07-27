@@ -9,3 +9,7 @@ class NodeModelTypes:
     ZipReaderNode = 'zip_reader'
     RedditBotNode = 'reddit_bot'
     CompanyEnrichmentNode = 'company_enrichment'
+
+    # File processing
+    SheetWriterNode = 'sheet_writer'
+    ScoringNode = 'scoring'

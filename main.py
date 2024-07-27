@@ -70,7 +70,7 @@ async def run_workflow(request: WorkflowRunRequest):
     for node_id, node in mapping.items():
         response.append({
             "id": node_id,
-            "name": node.node,
+            "key": node.node,
             "output": node.outputs
         })
     return response

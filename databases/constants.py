@@ -1,6 +1,7 @@
 from nodes import combine_text, user_input, gemini, web_scraper, file_reader, resume_analysis, summarizer, zip_reader, \
-    reddit_bot, company_enrichment
+    reddit_bot, company_enrichment, scoring
 from nodes.constants import NodeModelTypes
+from nodes.file_processing import sheet_writer
 
 
 class Tables:
@@ -39,5 +40,7 @@ NodeTypeClassMappings = {
     NodeModelTypes.SummarizerNode: summarizer.SummarizerNode,
     NodeModelTypes.ZipReaderNode: zip_reader.ZipReaderNode,
     NodeModelTypes.RedditBotNode: reddit_bot.RedditBotNode,
-    NodeModelTypes.CompanyEnrichmentNode: company_enrichment.CompanyEnrichmentNode
+    NodeModelTypes.CompanyEnrichmentNode: company_enrichment.CompanyEnrichmentNode,
+    NodeModelTypes.SheetWriterNode: sheet_writer.SheetWriterNode,
+    NodeModelTypes.ScoringNode: scoring.ScoringNode
 }
