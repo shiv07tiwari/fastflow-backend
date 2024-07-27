@@ -32,8 +32,8 @@ The resume is as follows:
 
 CONSOLIDATOR_PROMPT = """
 The following is the extracted information from various sources about a candidate applying for a job as a software engineer.
-Your task is to consolidate the information to make it as human readable as possible.
-Remove all new lines and weird characters from the response.
+Your task is to format the information into a human-readable report.
+Consolidate the information but make sure you do not lose any important details.
 
 RESUME INFORMATION:
 \\\
@@ -77,7 +77,7 @@ class ResumeAnalysisNode(BaseNode):
             node_type="ai",
             is_active=True,
             inputs=inputs,
-            outputs=["response", "links"],
+            outputs=["name", "response"],
         )
 
     async def _process_resume(self, file_content, instructions):
@@ -105,15 +105,15 @@ class ResumeAnalysisNode(BaseNode):
         consolidator_prompt = CONSOLIDATOR_PROMPT.format(resume=resume_data, github=github_data, instructions=instructions)
         response = await gemini_service.generate_response(consolidator_prompt, name="resume_analysis", stream=False)
 
-        return response, [github_url]
+        return response, name
 
     async def execute(self, input: dict) -> dict:
         file_output = input.get("input_resume")
         instructions = input.get("instructions")
 
-        response, links = await self._process_resume(file_output, instructions)
+        response, name = await self._process_resume(file_output, instructions)
 
         return {
             "response": response,
-            "links": links
+            "name": name
         }

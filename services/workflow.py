@@ -19,12 +19,10 @@ class WorkflowService:
         pass
 
     async def update_workflow_post_execution(self, workflow_id, nodes: List[str], edges):
-        workflow = WorkflowSchema(
-            name=f'Workflow-{workflow_id}',
-            owner='admin'
-        )
+        workflow = self.workflow_repo.fetch_by_id(workflow_id)
         workflow.set_edges(edges)
         workflow.set_nodes(nodes)
+        workflow.id = workflow_id
         self.workflow_repo.add_or_update(workflow)
 
     async def update_nodes_post_execution(self, workflow_id, updated_nodes):
@@ -151,7 +149,7 @@ class WorkflowExecutorService:
                 try:
                     await self.execute_node(target_node_id, visited, target_node.available_inputs)
                 except ValueError as e:
-                    print("ERROR: Failed to execute node:", e)
+                    print(f"ERROR: Failed to execute node ${target_node.node}:", e)
             else:
                 print(f"not now: {target_node.get_node().name}")
 
@@ -159,6 +157,7 @@ class WorkflowExecutorService:
         """
         DFS traversal of the workflow graph
         @param nodes: List of nodes from frontend.
+        @param edges: List of edges from frontend.
         A lot of the data is already present in the workflow object but we need to update the available inputs
         Thus might as well pass the nodes from the frontend
         :return:
@@ -166,7 +165,10 @@ class WorkflowExecutorService:
         execution_started_at = datetime.datetime.now().timestamp() * 1000
         workflow_nodes = [WorkFlowNode(**node) for node in nodes]
         self.node_mapping = {node.id: node for node in workflow_nodes}
-        self.input_edges = edges
+
+        # Cleanup edges which have an invalid source or target
+        valid_nodes = set(self.node_mapping.keys())
+        self.input_edges = [edge for edge in edges if edge['source'] in valid_nodes and edge['target'] in valid_nodes]
 
         self._create_adjacency_list(workflow_nodes)
         print("Adjacency List:", self.adj_list)
