@@ -79,7 +79,6 @@ class WorkflowExecutorService:
         self.input_edges = []
         self.parent_node_map = {}
 
-
     def get_start_nodes(self) -> List[str]:
         all_nodes = set(self.adj_list.keys())
         target_nodes = set()
@@ -102,27 +101,16 @@ class WorkflowExecutorService:
                 adj_list[source] = []
 
             adj_list[source].append({'target': target, 'outputHandle': output_handle, "inputHandle": input_handle})
+            if target in self.parent_node_map.keys():
+                self.parent_node_map[target].append(source)
+            else:
+                self.parent_node_map[target] = [source]
 
         self.adj_list = adj_list
 
-    def _create_parent_node_map(self, adj_list):
-        """
-        given an adj_list it generates a mapping of a node to all its parent nodes in the graph
-        """
-        # initialization
-        parent_node_map = dict()
-        for node_id in adj_list:
-            parent_node_map[node_id] = []
-
-        for node_id in adj_list:
-            edges = adj_list[node_id]
-            for edge in edges:
-                parent_node_map[edge["target"]] = parent_node_map[edge["target"]] + parent_node_map[node_id]
-        self.parent_node_map = parent_node_map
-
     def all_parents_executed(self, node_id: str, visited: set):
         """
-        Returns True if all parent nodes of node are already visited else returns False
+        Returns True if all parent nodes of node are already executed else returns False
         :param node_id: Node id
         :param visited: Set of visited nodes
         """
@@ -151,8 +139,10 @@ class WorkflowExecutorService:
             print(f"executing node- {base_node.name} {node_id}")
             print(f"Inputs: {available_inputs.keys()}")
 
-            # Execute the current node and mark it as visited
             outputs = await base_node.execute(available_inputs)
+            if isinstance(outputs, dict):
+                outputs = [outputs]
+
             node.outputs = outputs
             self.execution_order.append(node_id)
             print(f"outputs: {outputs}")
@@ -163,21 +153,26 @@ class WorkflowExecutorService:
                 target_node_id = neighbor_info['target']
                 input_handle = neighbor_info['inputHandle']
                 output_handle = neighbor_info.get('outputHandle')
+                handle_outputs = []
+                for output in outputs:
+                    if output_handle in output.keys():
+                        handle_outputs.append(output[output_handle])
 
                 # Recursively gather inputs for each neighboring node
                 await self.gather_and_execute_neighbor(target_node_id, visited, input_handle,
-                                                       outputs.get(output_handle))
+                                                       handle_outputs)
 
-    async def gather_and_execute_neighbor(self, target_node_id: str, visited: set, input_handle: str, edge_output: any):
+    async def gather_and_execute_neighbor(self, target_node_id: str, visited: set, input_handle: str,
+                                          handle_outputs: any):
         """
         Gather inputs for the neighboring node and execute it if all inputs are available
         """
         if target_node_id not in visited:
             target_node = self.node_mapping[target_node_id]
-            target_node.available_inputs[input_handle] = edge_output
+            target_node.available_inputs[input_handle] = handle_outputs
 
             try:
-                can_execute = target_node.can_execute()
+                can_execute = self.all_parents_executed(target_node_id, visited)
             except ValueError as e:
                 can_execute = True
                 print("ERROR: Failed to fetch can execute:", e)
@@ -210,9 +205,6 @@ class WorkflowExecutorService:
         self.input_edges = [edge for edge in edges if edge['source'] in valid_nodes and edge['target'] in valid_nodes]
 
         self._create_adjacency_list(workflow_nodes)
-        self._create_parent_node_map(self.adj_list)
-        print("Adjacency List:", self.adj_list)
-        print("Parent Node map: ", self.parent_node_map)
 
         visited = set()
         start_nodes = self.get_start_nodes()

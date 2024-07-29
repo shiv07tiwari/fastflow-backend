@@ -1,39 +1,43 @@
 import functools
 from hashlib import sha256
-import redis
 import asyncio
 
+import redis
+from redis import asyncio as aioredis
 
-def is_redis_available(r):
+
+async def is_redis_available(r):
     try:
-        return r.ping()  # Try pinging the Redis server
+        return await r.ping()  # Try pinging the Redis server
     except (redis.exceptions.ConnectionError, redis.exceptions.BusyLoadingError):
         return False
 
 
 try:
     # Initialize Redis client
-    redis_client = redis.Redis(
+    async_redis_client = aioredis.Redis(
         host='localhost',
         port=6379,
         db=0,
         decode_responses=True  # Automatically decoding responses to Python strings
     )
-    if is_redis_available(redis_client):
-        print("Connected to Redis")
-    else:
-        print("Failed to connect: Redis server is not available")
-        redis_client = None
+    sync_redis_client = redis.Redis(
+        host='localhost',
+        port=6379,
+        db=0,
+        decode_responses=True  # Automatically decoding responses to Python strings
+    )
 except Exception as e:
     print(f"Error connecting to Redis: {e}")
-    redis_client = None
+    async_redis_client = None
+    sync_redis_client = None
 
 
 def cache_response(timeout=86400):  # Default timeout set to 1 day (in seconds)
     def decorator(func):
         @functools.wraps(func)
         async def async_wrapper(*args, **kwargs):
-            if not redis_client:
+            if not await is_redis_available(async_redis_client):
                 return await func(*args, **kwargs)
 
             # Generate a unique cache key based on function name and parameters
@@ -41,7 +45,7 @@ def cache_response(timeout=86400):  # Default timeout set to 1 day (in seconds)
             cache_key = 'cache:' + sha256(key_base.encode('utf-8')).hexdigest()
 
             # Try to get cached response
-            cached = redis_client.get(cache_key)
+            cached = await async_redis_client.get(cache_key)
             if cached is not None:
                 print(f"Cache hit - {cache_key}")
                 return cached
@@ -49,13 +53,13 @@ def cache_response(timeout=86400):  # Default timeout set to 1 day (in seconds)
             # Calculate result and cache it
             result = await func(*args, **kwargs)
             if result:
-                redis_client.setex(cache_key, timeout, result)  # No clue why this shows coroutine not awaited
+                await async_redis_client.setex(cache_key, timeout, result)
                 print(f"Cache set - {cache_key}")
             return result
 
         @functools.wraps(func)
         def sync_wrapper(*args, **kwargs):
-            if not redis_client:
+            if not is_redis_available(sync_redis_client):
                 return func(*args, **kwargs)
 
             # Generate a unique cache key based on function name and parameters
@@ -63,7 +67,7 @@ def cache_response(timeout=86400):  # Default timeout set to 1 day (in seconds)
             cache_key = 'cache:' + sha256(key_base.encode('utf-8')).hexdigest()
 
             # Try to get cached response
-            cached = redis_client.get(cache_key)
+            cached = sync_redis_client.get(cache_key)
             if cached is not None:
                 print(f"Cache hit - {cache_key}")
                 return cached
@@ -71,7 +75,7 @@ def cache_response(timeout=86400):  # Default timeout set to 1 day (in seconds)
             # Calculate result and cache it
             result = func(*args, **kwargs)
             if result:
-                redis_client.setex(cache_key, timeout, result)
+                sync_redis_client.setex(cache_key, timeout, result)
                 print(f"Cache set - {cache_key}")
             return result
 

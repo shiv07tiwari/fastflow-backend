@@ -12,7 +12,7 @@ class WorkFlowNode(BaseModel):
     node: str = None
     workflow: str | None = None
     available_inputs: dict | None = {}
-    outputs: dict | None = {}
+    outputs: List[dict] | None = {}
     output_handles: List[str] | None = []
     is_deleted: bool = False
     external_inputs: List[BaseNodeInput]

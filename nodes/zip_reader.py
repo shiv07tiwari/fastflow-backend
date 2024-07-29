@@ -54,7 +54,7 @@ class ZipReaderNode(BaseNode):
 
         return file_names, file_contents
 
-    async def execute(self, input: dict) -> dict:
+    async def execute(self, input: dict) -> []:
         from databases.repository.file_upload import FileUploadRepository
         file_path = input.get("file_path")
         repo = FileUploadRepository()
@@ -64,7 +64,11 @@ class ZipReaderNode(BaseNode):
         except Exception as e:
             return {"error": str(e)}
 
-        return {
-            "file_names": file_names,
-            "file_contents": file_contents
-        }
+        response = []
+        for i in range(len(file_names)):
+            response.append({
+                "file_names": file_names[i],
+                "file_contents": file_contents[i]
+            })
+
+        return response
