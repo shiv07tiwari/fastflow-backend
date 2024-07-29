@@ -2,8 +2,16 @@ from dataclasses import dataclass
 from typing import List, Optional, Dict
 
 from services.utils import format_output_edges
-from workflows.workflow_schema import WorkflowSchema
-from workflows.workflow_node import WorkFlowNode
+from databases.models.workflow_schema import WorkflowSchema
+from databases.models.workflow_node import WorkFlowNode
+from pydantic import BaseModel
+
+
+class WorkflowRunRequest(BaseModel):
+    id: str
+    nodes: list | None = None
+    edges: list | None = None
+    run_id: str
 
 
 @dataclass
@@ -37,4 +45,3 @@ class WorkflowResponseDTO:
             nodes=nodes,
             edges=edges,
         )
-
