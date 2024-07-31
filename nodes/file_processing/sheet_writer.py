@@ -41,11 +41,18 @@ class SheetWriterNode(BaseNode):
         column_1 = input.get("column_1", [])
         column_2 = input.get("column_2", [])
         column_3 = input.get("column_3", [])
+        max_length = max(len(column_1), len(column_2), len(column_3))
 
         if isinstance(column_1, str):
             rows = [[column_1, column_2, column_3]]
         else:
-            rows = [[column_1[i], column_2[i], column_3[i]] for i in range(len(column_1))]
+            rows = []
+            for i in range(max_length):
+                row = []
+                row.append(column_1[i] if i < len(column_1) else "")
+                row.append(column_2[i] if i < len(column_2) else "")
+                row.append(column_3[i] if i < len(column_3) else "")
+                rows.append(row)
 
         file_path = self.create_csv(headers, rows)
         public_url = repo.upload_file(file_path)

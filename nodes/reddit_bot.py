@@ -25,22 +25,32 @@ class RedditBotNode(BaseNode):
                 **kwargs
             )
 
-    async def execute(self, input: dict) -> {}:
+    async def execute(self, input: dict) -> []:
         service = RedditService()
         subreddit = input.get("subreddit", None)
         query = input.get("query", '')
+
+        if isinstance(subreddit, list):
+            raise ValueError("Subreddit should be a string")
+
+        if not isinstance(query, list):
+            query = [query]
+
         try:
             post_limit = int(input.get("post_limit", 10))
         except Exception:
             post_limit = 10
 
-        data = await service.search_reddit(query, subreddit, post_limit)
-        post_titles = data["title"].values.tolist()
-        post_contents = data["body"].values.tolist()
-        post_urls = data["url"].values.tolist()
+        response = []
+        for q in query:
+            data = await service.search_reddit(q, subreddit, post_limit)
+            post_titles = "\n".join(data["title"].values)
+            post_contents = "\n".join(data["body"].values)
+            post_urls = "\n".join(data["url"].values)
+            response.append({
+                "post_titles": post_titles,
+                "post_contents": post_contents,
+                "post_urls": post_urls
+            })
 
-        return {
-            "post_titles": post_titles,
-            "post_contents": post_contents,
-            "post_urls": post_urls
-        }
+        return response

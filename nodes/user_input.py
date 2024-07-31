@@ -25,8 +25,8 @@ class UserInputNode(BaseNode):
                 **kwargs
             )
 
-    async def execute(self, input: dict) -> dict:
-        return {"response": input.get("input")}
+    async def execute(self, input: dict) -> []:
+        return [input.get("input")]
 
     def can_execute(self, inputs: dict) -> bool:
         return True

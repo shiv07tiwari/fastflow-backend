@@ -1,3 +1,4 @@
+import asyncio
 import json
 import re
 
@@ -15,19 +16,21 @@ Your task is to extract some key information from the resume and answer the foll
 4. Summarize and return a list of candidates work experience.
 5. Summarize and return a list of candidates skills.
 
-Return the answers in a dictionary with the following keys:
+Return the answers in a JSON with the following keys:
 - name
 - current_employer
 - work_experience
 - skills
+- github_url [If you can not find one, return empty string]
+- linkedin_url [If you can not find one, return empty string]
 
-Please format the response to not contain any next lines or special characters.
-ENSURE THAT THE RESPONSE IS IN JSON FORMAT WHICH CAN BE PARSED BY PYTHON USING json.loads(). Do not add anything extra to the response.
 
 The resume is as follows:
 \\\
 {resume}
 \\\
+
+You must return ONLY the JSON output in requested schema. Do not include markdown triple backticks around your output.
 """
 
 CONSOLIDATOR_PROMPT = """
@@ -54,9 +57,11 @@ def is_github_profile_url(url):
     regex = r"^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$"
     return bool(re.match(regex, url))
 
+
 def is_portfolio_url(url):
     # TODO: How?
     return False
+
 
 def is_linkedin_url(url):
     return False
@@ -80,40 +85,55 @@ class ResumeAnalysisNode(BaseNode):
             outputs=["name", "response"],
         )
 
+    async def google_search_for_github_url(self, name, current_employer):
+        google_search_text = f"{name} {current_employer} Github"
+        urls = get_urls_for_search_query(google_search_text)
+        for url in urls:
+            if is_github_profile_url(url):
+                return url
+        return None
+
     async def _process_resume(self, file_content, instructions):
+        """
+        TODO: Test this
+        """
         gemini_service = GeminiService()
         formatted_prompt = EXTRACTOR_PROMPT.format(resume=file_content, instructions=instructions)
-        extracted_information = await gemini_service.generate_response(formatted_prompt, name="resume_analysis",
-                                                                              stream=False)
+        extracted_information = await gemini_service.generate_json_llama_response(formatted_prompt, name="resume_analysis",
+                                                                             stream=False)
         extracted_information_json = json.loads(extracted_information)
 
         name = extracted_information_json.get("name")
         current_employer = extracted_information_json.get("current_employer")
+        github_url = extracted_information_json.get("github_url")
+        linkedin_url = extracted_information_json.get("linkedin_url")
+        print("LLM Found github url", github_url)
 
-        google_search_text = f"{name} {current_employer} Github"
-        urls = get_urls_for_search_query(google_search_text)
+        if not github_url and False:  # TODO: Remove this False
+            github_url = await self.google_search_for_github_url(name, current_employer)
 
-        github_url = None
-        for url in urls:
-            if is_github_profile_url(url):
-                github_url = url
-                break
-
+        print(f"awaiting website content {github_url}")
         github_data = await scrape_website_content(github_url, 30000)
 
         resume_data = extracted_information_json["work_experience"] + extracted_information_json["skills"]
-        consolidator_prompt = CONSOLIDATOR_PROMPT.format(resume=resume_data, github=github_data, instructions=instructions)
-        response = await gemini_service.generate_response(consolidator_prompt, name="resume_analysis", stream=False)
+        consolidator_prompt = CONSOLIDATOR_PROMPT.format(resume=resume_data, github=github_data,
+                                                         instructions=instructions)
+        response = await gemini_service.generate_json_llama_response(consolidator_prompt, name="resume_analysis",
+                                                                stream=False)
 
         return response, name
 
-    async def execute(self, input: dict) -> dict:
+    async def execute(self, input: dict) -> []:
         file_output = input.get("input_resume")
         instructions = input.get("instructions")
 
-        response, name = await self._process_resume(file_output, instructions)
+        if isinstance(file_output, str):
+            file_output = [file_output]
 
-        return {
-            "response": response,
-            "name": name
-        }
+        responses = []
+        for file in file_output:
+            response = self._process_resume(file, instructions)
+            responses.append(response)
+
+        responses = await asyncio.gather(*responses)
+        return [{"response": response, "name": name} for response, name in responses]

@@ -33,12 +33,16 @@ class SummarizerNode(BaseNode):
                 **kwargs
             )
 
-    async def execute(self, input: dict) -> dict:
+    async def execute(self, input: dict) -> []:
         input_content = input.get("input_content")
+        if not isinstance(input_content, list):
+            input_content = [input_content]
         gemini_service = GeminiService()
-        formatted_prompt = PROMPT.format(input_content=input_content)
-        response = await gemini_service.generate_response(prompt=formatted_prompt, name=self.name, stream=False)
 
-        return {
-            "response": response,
-        }
+        response = []
+        for content in input_content:
+            formatted_prompt = PROMPT.format(input_content=content)
+            llm_response = await gemini_service.generate_response(prompt=formatted_prompt, name=self.name, stream=False)
+            response.append(llm_response)
+
+        return response

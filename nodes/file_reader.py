@@ -24,25 +24,33 @@ class FileReader(BaseNode):
                 **kwargs
             )
 
-    async def execute(self, input: dict) -> dict:
+    async def execute(self, input: dict) -> []:
         from databases.repository.file_upload import FileUploadRepository
-        file_path = input.get("file_path")
+        file_path = input.get("file_path", '')
         repo = FileUploadRepository()
 
-        try:
-            file_contents = repo.read_file(file_path)
-            if file_path.endswith('.pdf'):
-                file_contents = extract_text_from_pdf(file_contents)
-                links = extract_links(file_contents)
-            elif file_path.endswith('.csv'):
-                file_contents = extract_data_from_csv(file_contents)
-                links = []
-            else:
-                return {"error": f"Unsupported file type for {file_path}"}
-        except Exception as e:
-            return {"error": str(e)}
+        if not isinstance(file_path, list):
+            file_path = [file_path]
 
-        return {
-            "response": file_contents,
-            "links": links
-        }
+        response = []
+        for path in file_path:
+            if not path:
+                continue
+            try:
+                file_contents = repo.read_file(path)
+                if path.endswith('.pdf'):
+                    file_contents = extract_text_from_pdf(file_contents)
+                    links = extract_links(file_contents)
+                elif path.endswith('.csv'):
+                    file_contents = extract_data_from_csv(file_contents)
+                    links = []
+                else:
+                    return {"error": f"Unsupported file type for {path}"}
+                response.append({
+                    "response": file_contents,
+                    "links": links
+                })
+            except Exception as e:
+                return {"error": str(e)}
+
+        return response

@@ -37,16 +37,10 @@ class CompanyEnrichmentNode(BaseNode):
             outputs=["company_name", "summary", "primary_industry"],
         )
 
-    async def execute(self, input: dict) -> dict:
+    async def _generate_company_summary(self, company_name, company_website):
         gemini_service = GeminiService()
-        company_name = input.get("company_name")
-        # TODO: Validate this URL
-        company_website = input.get("company_url", None)
-
         company_urls = get_urls_for_search_query(f"Company ${company_name}", 3)
         company_urls.append(company_website)
-
-        # TODO: Filter garbage URLs
 
         _web_data = []
         for url in company_urls:
@@ -54,18 +48,32 @@ class CompanyEnrichmentNode(BaseNode):
             _web_data.append(data)
 
         web_data = await asyncio.gather(*_web_data)
-
-        # Combine all the web data
-
         web_data_text_blob = " \\ Scraped Information \\ ".join([data for data in web_data if data is not None])
         response = await gemini_service.generate_response(PROMPT.format(web_data=web_data_text_blob),
                                                           name="company_enrichment", stream=False)
+        return response
 
-        return {
-            "company_name": company_name,
-            "summary": response,
-            "primary_industry": ""
-        }
+    async def execute(self, input: dict) -> []:
+        company_name = input.get("company_name")
+        company_website = input.get("company_url", None) # TODO: Validate this URL
+
+        if not isinstance(company_website, list):
+            company_website = [company_website]
+        if not isinstance(company_name, list):
+            company_name = [company_name]
+
+        data_pairs = list(zip(company_name, company_website))
+
+        response = []
+        for name, website in data_pairs:
+            summary = await self._generate_company_summary(name, website)
+            response.append({
+                "company_name": name,
+                "summary": summary,
+                "primary_industry": ""
+            })
+
+        return response
 
     async def can_execute(self, *args, **kwargs):
         return True

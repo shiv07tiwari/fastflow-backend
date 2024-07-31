@@ -10,12 +10,9 @@ class GeminiNode(BaseNode):
         else:
             inputs = [
                 BaseNodeInput("prompt", InputType.INTERNAL_ONLY, "text", is_required=True),
-                BaseNodeInput("input_1", InputType.EXTERNAL_ONLY, "text"),
-                BaseNodeInput("input_2", InputType.EXTERNAL_ONLY, "text"),
+                BaseNodeInput("input_1", InputType.COMMON, "text"),
+                BaseNodeInput("input_2", InputType.COMMON, "text"),
                 BaseNodeInput("input_3", InputType.EXTERNAL_ONLY, "text"),
-                BaseNodeInput("input_1_index", InputType.CONFIG, "number"),
-                BaseNodeInput("input_2_index", InputType.CONFIG, "number"),
-                BaseNodeInput("input_3_index", InputType.CONFIG, "number"),
             ]
             super().__init__(
                 id='gemini',
@@ -29,16 +26,37 @@ class GeminiNode(BaseNode):
                 **kwargs
             )
 
-    async def execute(self, input: dict) -> {}:
+    async def execute(self, input: dict) -> []:
         service = GeminiService()
         prompt = input.get("prompt")
-        formatted_prompt = prompt.format(**input)
 
-        try:
-            response = await service.generate_response(prompt=formatted_prompt, name=self.name, stream=None)
-        except Exception as e:
-            print(f"Error in executing node {self.name}: {e}")
-            raise e
+        response = []
+        input_1 = input.get("input_1", [])
+        input_2 = input.get("input_2", [])
+        input_3 = input.get("input_3", [])
+
+        if not isinstance(input_1, list):
+            input_1 = [input_1]
+        if not isinstance(input_2, list):
+            input_2 = [input_2]
+        if not isinstance(input_3, list):
+            input_3 = [input_3]
+
+        max_length = max(len(input_1), len(input_2), len(input_3))
+
+        for i in range(max_length):
+            _input = {
+                "input_1": input_1[i] if i < len(input_1) else "",
+                "input_2": input_2[i] if i < len(input_2) else "",
+                "input_3": input_3[i] if i < len(input_3) else "",
+            }
+            formatted_prompt = prompt.format(**_input)
+            try:
+                llm_response = await service.generate_response(prompt=formatted_prompt, name=self.name, stream=None)
+            except Exception as e:
+                print(f"Error in executing node {self.name}: {e}")
+                raise e
+            response.append(llm_response)
         return {
             "response": response
         }

@@ -24,16 +24,18 @@ class WebScraperNode(BaseNode):
                 outputs=["response"],
             )
 
-    async def execute(self, input: dict) -> dict:
-        url: str = input.get("url")
+    async def execute(self, input: dict) -> []:
+        url = input.get("url", '')
+        if not isinstance(url, list):
+            url = [url]
 
-        if type(url) is list:
-            print("WARNING: Multiple URLs provided, using the first one")
-            url = url[0]
+        response = []
 
-        url = url.strip()
-        data = await scrape_website_content(url, 30000)
-        return {"response": data}
+        for u in url:
+            data = await scrape_website_content(u, 30000)
+            response.append(data)
+
+        return response
 
     def can_execute(self, inputs: dict) -> bool:
         return True
