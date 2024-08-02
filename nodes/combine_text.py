@@ -27,13 +27,21 @@ class CombineTextNode(BaseNode):
             )
         self.total_inputs_to_combine = kwargs.get("total_inputs_to_combine", 2)
 
-    async def execute(self, input: dict) -> dict:  # Corrected return type annotation
+    async def execute(self, input: dict) -> []:
+        input_text_1 = input.get("input_text_1")
+        input_text_2 = input.get("input_text_2")
+
+        if not isinstance(input_text_2, list):
+            input_text_2 = [input_text_2]
+        if not isinstance(input_text_1, list):
+            input_text_1 = [input_text_1]
+
         combined_text = ""
-        for i in range(1, self.total_inputs_to_combine + 1):
-            text = input.get(f"input_text_{i}")
-            if text is not None:  # Ensure 'text' is not None
-                combined_text += text.strip() + " "  # Corrected 'trim()' to 'strip()'
-        return {"response": combined_text.strip()}  # Remove trailing whitespace
+        for text in input_text_1 + input_text_2:
+            if text is not None:
+                combined_text += str(text).strip() + " "
+
+        return [combined_text]
 
     def can_execute(self, inputs: dict) -> bool:
         return len(inputs) == self.total_inputs_to_combine
