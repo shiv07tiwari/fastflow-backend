@@ -1,9 +1,8 @@
 from typing import List
 
-from databases import base
 from databases.constants import QueryConstants, Tables
 from databases.controller import DatabaseController
-from workflows.workflow_node import WorkFlowNode
+from databases.models.workflow_node import WorkFlowNode
 
 
 class WorkflowNodeRepository:
@@ -28,9 +27,9 @@ class WorkflowNodeRepository:
     def add_or_update(self, node_id, data):
         # Data contains external_inputs, internal_inputs, common_inputs
         # Convert them to dict
-        data['external_inputs'] = [input.to_dict() for input in data['external_inputs']]
-        data['internal_inputs'] = [input.to_dict() for input in data['internal_inputs']]
-        data['common_inputs'] = [input.to_dict() for input in data['common_inputs']]
+        data['external_inputs'] = [input.to_dict() if not isinstance(input, dict) else input for input in data['external_inputs']]
+        data['internal_inputs'] = [input.to_dict() if not isinstance(input, dict) else input for input in data['internal_inputs']]
+        data['common_inputs'] = [input.to_dict() if not isinstance(input, dict) else input for input in data['common_inputs']]
         self.db_controller.insert(self.table, data, node_id)
 
     def delete(self, node_id):

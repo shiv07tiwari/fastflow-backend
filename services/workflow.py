@@ -1,14 +1,12 @@
-import datetime
-import uuid
-from typing import Dict, List
-
 from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
 from databases.repository.workflow_run import WorkflowRunRepository
-from workflows.workflow_schema import WorkflowSchema
-from workflows.workflow_node import WorkFlowNode
-from workflows.workflow_run import WorkflowRun
+from databases.models.workflow_run import WorkflowRun
+import datetime
+from typing import Dict, List
 
+from databases.models.workflow_schema import WorkflowSchema
+from databases.models.workflow_node import WorkFlowNode
 
 # class Edge:
 #     def __init__(self):
@@ -53,13 +51,32 @@ class WorkflowService:
                 node.workflow = None
                 self.workflow_node_repo.add_or_update(node.id, node.to_dict())
 
-    async def create_workflow_run(self, workflow_id: str, nodes: list[WorkFlowNode], edges: list, executed_at) -> str:
-        id = uuid.uuid4().hex
-        # Convert nodes to a List[Dict[str, List[str]]]
-        nodes = [node.to_dict() for node in nodes]
-        workflow_run = WorkflowRun(id=id, workflow_id=workflow_id, nodes=nodes, edges=edges, executed_at=executed_at)
+    async def add_node_to_workflow_run(self, run: WorkflowRun, node: [WorkFlowNode]):
+        run.nodes.append(node.to_dict())
+        self.workflow_run_repo.add_or_update(run)
+
+    async def initiate_workflow_run(self, workflow_id: str, run_id: str, num_nodes: int) -> WorkflowRun:
+        started_at = datetime.datetime.now().timestamp() * 1000
+        workflow_run = WorkflowRun(
+            id=run_id,
+            workflow_id=workflow_id,
+            started_at=started_at,
+            num_nodes=num_nodes,
+            status="running"
+        )
         self.workflow_run_repo.add_or_update(workflow_run)
-        return workflow_run.id
+        return workflow_run
+
+    async def update_workflow_run(self, run: WorkflowRun, nodes: List[WorkFlowNode], edges: List[Dict[str, str]], executed_at: float):
+        run.nodes = nodes
+        run.edges = edges
+        run.status = "completed"
+        run.executed_at = executed_at
+        self.workflow_run_repo.add_or_update(run)
+
+    async def mark_workflow_run_failed(self, run: WorkflowRun):
+        run.status = "failed"
+        self.workflow_run_repo.add_or_update(run)
 
 
 class WorkflowExecutorService:
@@ -70,6 +87,7 @@ class WorkflowExecutorService:
     execution_order = []
     workflow_service = WorkflowService()
     parent_node_map: Dict[str, List] = {}
+    run= None
 
     def __init__(self, workflow_id: str):
         self.workflow_id = workflow_id
@@ -78,14 +96,11 @@ class WorkflowExecutorService:
         self.adj_list = {}
         self.input_edges = []
         self.parent_node_map = {}
+        self.run = None
 
     def get_start_nodes(self) -> List[str]:
         all_nodes = set(self.adj_list.keys())
-        target_nodes = set()
-
-        for edge in self.input_edges:
-            target_nodes.add(edge['target'])
-
+        target_nodes = set([edge['target'] for edge in self.input_edges])
         start_nodes = all_nodes - target_nodes
         return list(start_nodes)
 
@@ -109,11 +124,8 @@ class WorkflowExecutorService:
         self.adj_list = adj_list
 
     def all_parents_executed(self, node_id: str, visited: set):
-        """
-        Returns True if all parent nodes of node are already executed else returns False
-        :param node_id: Node id
-        :param visited: Set of visited nodes
-        """
+        """ Returns True if all parent nodes of node are already executed else returns False """
+
         for parent_node in self.parent_node_map[node_id]:
             if parent_node not in visited:
                 return False
@@ -136,20 +148,19 @@ class WorkflowExecutorService:
             if input_data:
                 available_inputs.update(input_data)
 
-            print(f"executing node- {base_node.name} {node_id}")
-            print(f"Inputs: {available_inputs.keys()}")
-
             outputs = await base_node.execute(available_inputs)
             if isinstance(outputs, dict):
                 outputs = [outputs]
 
             node.outputs = outputs
+            node.available_inputs = available_inputs
+            # TODO: Make this async
+            await self.workflow_service.add_node_to_workflow_run(run=self.run, node=node)
+
             self.execution_order.append(node_id)
-            print(f"outputs: {outputs}")
             visited.add(node_id)
 
             for neighbor_info in self.adj_list.get(node_id, []):
-                print(f"checking child: {neighbor_info}")
                 target_node_id = neighbor_info['target']
                 input_handle = neighbor_info['inputHandle']
                 output_handle = neighbor_info.get('outputHandle')
@@ -170,24 +181,17 @@ class WorkflowExecutorService:
         if target_node_id not in visited:
             target_node = self.node_mapping[target_node_id]
             target_node.available_inputs[input_handle] = handle_outputs
-
-            try:
-                can_execute = self.all_parents_executed(target_node_id, visited)
-            except ValueError as e:
-                can_execute = True
-                print("ERROR: Failed to fetch can execute:", e)
-
-            print("can execute:", target_node.get_node().name, can_execute, target_node.available_inputs)
-
+            can_execute = self.all_parents_executed(target_node_id, visited)
             if can_execute:
                 try:
                     await self.execute_node(target_node_id, visited, target_node.available_inputs)
-                except ValueError as e:
-                    print(f"ERROR: Failed to execute node ${target_node.node}:", e)
+                except Exception as e:
+                    await self.workflow_service.mark_workflow_run_failed(self.run)
+                    raise e
             else:
                 print(f"not now: {target_node.get_node().name}")
 
-    async def execute(self, nodes: list, edges: list) -> Dict[str, WorkFlowNode]:
+    async def execute(self, nodes: list, edges: list, run_id: str) -> WorkflowRun:
         """
         DFS traversal of the workflow graph
         @param nodes: List of nodes from frontend.
@@ -196,7 +200,8 @@ class WorkflowExecutorService:
         Thus might as well pass the nodes from the frontend
         :return:
         """
-        execution_started_at = datetime.datetime.now().timestamp() * 1000
+        self.run = await self.workflow_service.initiate_workflow_run(self.workflow_id, run_id, num_nodes=len(nodes))
+
         workflow_nodes = [WorkFlowNode(**node) for node in nodes]
         self.node_mapping = {node.id: node for node in workflow_nodes}
 
@@ -219,7 +224,12 @@ class WorkflowExecutorService:
         updated_node_ids = [node.id for node in updated_nodes]
         await self.workflow_service.update_workflow_post_execution(self.workflow_id, updated_node_ids, edges)
         await self.workflow_service.update_nodes_post_execution(self.workflow_id, updated_nodes)
-        await self.workflow_service.create_workflow_run(self.workflow_id, list(self.node_mapping.values()), edges,
-                                                        execution_started_at)
+        executed_at = datetime.datetime.now().timestamp() * 1000
+        await self.workflow_service.update_workflow_run(
+            self.run,
+            list(self.node_mapping.values()),
+            edges,
+            executed_at
+        )
 
-        return self.node_mapping
+        return self.run

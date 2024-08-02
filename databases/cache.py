@@ -85,3 +85,10 @@ def cache_response(timeout=86400):  # Default timeout set to 1 day (in seconds)
             return sync_wrapper
 
     return decorator
+
+
+async def fetch_cached_response_for_hex_code(hex_code):
+    if not await is_redis_available(async_redis_client):
+        return None
+    print("LLM Cache hit - ", hex_code)
+    return await async_redis_client.get(hex_code)

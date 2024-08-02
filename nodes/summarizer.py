@@ -1,3 +1,5 @@
+import asyncio
+
 from nodes.base_node import BaseNode, BaseNodeInput, InputType
 from services import GeminiService
 
@@ -33,16 +35,18 @@ class SummarizerNode(BaseNode):
                 **kwargs
             )
 
-    async def execute(self, input: dict) -> []:
+    async def execute(self, input: dict) -> list:
         input_content = input.get("input_content")
-        if not isinstance(input_content, list):
+        if isinstance(input_content, str):
             input_content = [input_content]
+
         gemini_service = GeminiService()
 
-        response = []
+        responses = []
         for content in input_content:
             formatted_prompt = PROMPT.format(input_content=content)
-            llm_response = await gemini_service.generate_response(prompt=formatted_prompt, name=self.name, stream=False)
-            response.append(llm_response)
+            response = gemini_service.generate_response(prompt=formatted_prompt, name=self.name, stream=False)
+            responses.append(response)
+        responses = await asyncio.gather(*responses)
 
-        return response
+        return [{"response": response} for response in responses]

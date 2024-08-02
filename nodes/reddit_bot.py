@@ -1,3 +1,5 @@
+import asyncio
+
 from nodes.base_node import BaseNode, NodeType, BaseNodeInput, InputType
 from services.reddit import RedditService
 
@@ -43,14 +45,20 @@ class RedditBotNode(BaseNode):
 
         response = []
         for q in query:
-            data = await service.search_reddit(q, subreddit, post_limit)
+            promise = service.search_reddit(q, subreddit, post_limit)
+            response.append(promise)
+
+        response = await asyncio.gather(*response)
+
+        final_response = []
+        for data in response:
             post_titles = "\n".join(data["title"].values)
             post_contents = "\n".join(data["body"].values)
             post_urls = "\n".join(data["url"].values)
-            response.append({
+            final_response.append({
                 "post_titles": post_titles,
                 "post_contents": post_contents,
                 "post_urls": post_urls
             })
 
-        return response
+        return final_response
