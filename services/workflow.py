@@ -153,6 +153,7 @@ class WorkflowExecutorService:
                 outputs = [outputs]
 
             node.outputs = outputs
+            node.available_inputs = available_inputs
             # TODO: Make this async
             await self.workflow_service.add_node_to_workflow_run(run=self.run, node=node)
 
@@ -185,8 +186,8 @@ class WorkflowExecutorService:
                 try:
                     await self.execute_node(target_node_id, visited, target_node.available_inputs)
                 except Exception as e:
-                    print(f"Failed to execute node: {target_node.get_node().name} {e}")
                     await self.workflow_service.mark_workflow_run_failed(self.run)
+                    raise e
             else:
                 print(f"not now: {target_node.get_node().name}")
 

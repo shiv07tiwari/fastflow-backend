@@ -2,7 +2,8 @@ import asyncio
 import json
 import os
 
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.websockets import WebSocketState
 from fastapi.middleware.cors import CORSMiddleware
 
 from dotenv import load_dotenv
@@ -120,8 +121,8 @@ class ConnectionManager:
 
     async def broadcast(self, message: str):
         for connection in self.active_connections:
-            print("Sending message ", connection, message)
-            await connection.send_json(message)
+            if connection.application_state == WebSocketState.CONNECTED:
+                await connection.send_text(message)
 
 
 manager = ConnectionManager()
@@ -133,25 +134,30 @@ async def workflow_nodes_websocket(websocket: WebSocket, run_id: str):
     total_not_found = 0
     try:
         while True:
-            await asyncio.sleep(5)
+            await asyncio.sleep(1)
             try:
                 data = WorkflowRunRepository().get(run_id)
             except Exception:
                 # Run not yet created or not at all found
                 total_not_found += 1
                 if total_not_found > 2:
+                    print("Closing as not found")
                     await websocket.close()
                     break
                 continue
             nodes = data.nodes
             if len(nodes) == data.num_nodes:
+                print("Closing as all nodes found")
                 await websocket.close()
                 break
             if data.status in ["failed", "completed"]:
+                print("Closing as status is ", data.status)
                 await websocket.close()
                 break
 
             data_json = json.dumps(data.to_dict())
             await manager.broadcast(data_json)
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
     except Exception as e:
         print(f"websocket error: {e}")

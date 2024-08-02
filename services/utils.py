@@ -1,4 +1,5 @@
 import re
+import hashlib
 
 
 def extract_links(text):
@@ -38,3 +39,19 @@ def format_output_edges(edges):
         edge_output.pop('inputHandle', None)
         output_edges.append(edge_output)
     return output_edges
+
+
+def string_to_hex(string: str) -> str:
+    # Create a SHA-256 hash object
+    hash_object = hashlib.sha256()
+
+    # Update the hash object with the input string, encoded to bytes
+    hash_object.update(string.encode('utf-8'))
+
+    # Get the hexadecimal representation of the hash
+    full_hash_hex = hash_object.hexdigest()
+
+    # Truncate to the first 16 characters
+    truncated_hash_hex = full_hash_hex[:16]
+
+    return truncated_hash_hex
