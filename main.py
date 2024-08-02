@@ -91,7 +91,7 @@ async def get_workflow(workflow_id: str):
 Fixtures().add_test_data(1)
 
 
-@app.get("/base-nodes")
+@app.get("/nodes")
 async def get_nodes():
     nodes = NodeRepository().fetch_all()
     return nodes

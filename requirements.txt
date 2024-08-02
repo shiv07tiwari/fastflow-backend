@@ -92,3 +92,4 @@ websockets==12.0
 llama-index
 llama-index-llms-gemini 
 llama-index-embeddings-gemini
+ollama
