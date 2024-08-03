@@ -1,6 +1,6 @@
 from databases.constants import Tables
 from databases.controller import DatabaseController
-from workflows.workflow_schema import WorkflowSchema
+from databases.models.workflow_schema import WorkflowSchema
 
 
 class WorkflowRepository:

@@ -99,8 +99,8 @@ class ResumeAnalysisNode(BaseNode):
         """
         gemini_service = GeminiService()
         formatted_prompt = EXTRACTOR_PROMPT.format(resume=file_content, instructions=instructions)
-        extracted_information = await gemini_service.generate_json_llama_response(formatted_prompt, name="resume_analysis",
-                                                                             stream=False)
+        extracted_information = await gemini_service.generate_cached_response(formatted_prompt, name="resume_analysis",
+                                                                              stream=False)
         extracted_information_json = json.loads(extracted_information)
 
         name = extracted_information_json.get("name")
@@ -118,8 +118,8 @@ class ResumeAnalysisNode(BaseNode):
         resume_data = extracted_information_json["work_experience"] + extracted_information_json["skills"]
         consolidator_prompt = CONSOLIDATOR_PROMPT.format(resume=resume_data, github=github_data,
                                                          instructions=instructions)
-        response = await gemini_service.generate_json_llama_response(consolidator_prompt, name="resume_analysis",
-                                                                stream=False)
+        response = await gemini_service.generate_cached_response(consolidator_prompt, name="resume_analysis",
+                                                                 stream=False)
 
         return response, name
 

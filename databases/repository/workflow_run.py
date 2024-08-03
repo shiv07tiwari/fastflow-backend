@@ -1,7 +1,7 @@
 from databases.constants import Tables
 from databases.controller import DatabaseController
 from databases.repository.workflow_node import WorkflowNodeRepository
-from workflows.workflow_run import WorkflowRun
+from databases.models.workflow_run import WorkflowRun
 
 
 class WorkflowRunRepository:
@@ -19,3 +19,7 @@ class WorkflowRunRepository:
     def fetch_by_workflow_id(self, workflow_id):
         data = self.db_controller.query_equal(self.table, "workflow_id", workflow_id)
         return [WorkflowRun(**run) for run in data]
+
+    def get(self, run_id):
+        data = self.db_controller.get(self.table, run_id)
+        return WorkflowRun(**data)
