@@ -12,16 +12,12 @@ Your task is to extract some key information from the resume and answer the foll
 
 1. What is the candidate's name?
 2. What is the candidate's current employer? Only return the name of the employer.
-4. Summarize and return a list of candidates work experience.
-5. Summarize and return a list of candidates skills.
-
-Return the answers in a JSON with the following keys:
-- name
-- current_employer
-- work_experience
-- skills
-- github_url [If you can not find one, return empty string]
-- linkedin_url [If you can not find one, return empty string]
+3. Summarize and return a list of candidates work experience.
+4. Summarize and return a list of candidates skills.
+5. Return the candidate's valid Github Profile URL. If the candidate does not have a Github profile, return an empty string.
+If the link is partial, then also return a valid Github URL with domain and username.
+6. Return the candidate's valid LinkedIn Profile URL. If the candidate does not have a LinkedIn profile, return an empty string.
+If the link is partial, then also return a valid LinkedIn URL with domain.
 
 
 The resume is as follows:
@@ -29,6 +25,14 @@ The resume is as follows:
 {resume}
 \\\
 
+# Output Format
+Return the answers in a JSON with the following keys:
+- name
+- current_employer
+- work_experience
+- skills
+- github_url
+- linkedin_url
 You must return ONLY the JSON output in requested schema. Do not include markdown triple backticks around your output.
 """
 
@@ -108,11 +112,13 @@ class ResumeAnalysisNode(BaseNode):
         extracted_information = await gemini_service.generate_cached_json_response(formatted_prompt, name="resume_analysis",
                                                                               stream=False)
 
-        name = extracted_information.get("name")
+        name = str(extracted_information.get("name"))
         current_employer = extracted_information.get("current_employer")
         github_url = extracted_information.get("github_url")
         linkedin_url = extracted_information.get("linkedin_url")
         print("LLM Found github url", github_url)
+        work_experience = str(extracted_information.get("work_experience"))
+        skills = str(extracted_information.get("skills"))
 
         if not github_url and False:  # TODO: Remove this False
             github_url = await self.google_search_for_github_url(name, current_employer)
@@ -120,7 +126,7 @@ class ResumeAnalysisNode(BaseNode):
         print(f"awaiting website content {github_url}")
         github_data = await scrape_website_content(github_url, 30000)
 
-        resume_data = extracted_information["work_experience"] + extracted_information["skills"]
+        resume_data = "\n".join([name, current_employer, work_experience, skills])
         consolidator_prompt = CONSOLIDATOR_PROMPT.format(resume=resume_data, github=github_data,
                                                          instructions=instructions)
         response = await gemini_service.generate_cached_response(consolidator_prompt, name="resume_analysis",

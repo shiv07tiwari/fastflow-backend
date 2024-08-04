@@ -43,6 +43,7 @@ The criteria is as follows:
 Output a json response with keys as follows:
 - score: The score out of 100 based on the criteria. Key should be "score" and value should be an integer. 
 - reasoning: The reasoning behind the score. Key should be "reasoning" and value should be a string explaining the score.
+Start with the candidate's name in your reasoning.
 
 You must return ONLY the JSON output in this schema. Do not include markdown triple backticks around your output.
 """
