@@ -17,7 +17,6 @@ class DatabaseController:
             db_collection.add(data)
         else:
             db_collection.document(document_id).set(data)
-        print("Inserted data in table {}, Data: {}".format(table, data))
 
     def update(self, table: str, data: dict, document_id: str):
         self.db.collection(table).document(document_id).update(data)
