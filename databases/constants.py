@@ -1,5 +1,5 @@
 from nodes import combine_text, user_input, gemini, web_scraper, file_reader, resume_analysis, summarizer, zip_reader, \
-    reddit_bot, company_enrichment, scoring
+    reddit_bot, company_enrichment, scoring, yt_comments, gemini_rag
 from nodes.constants import NodeModelTypes
 from nodes.file_processing import sheet_writer
 
@@ -35,6 +35,7 @@ NodeTypeClassMappings = {
     NodeModelTypes.UserInput: user_input.UserInputNode,
     NodeModelTypes.WebScraper: web_scraper.WebScraperNode,
     NodeModelTypes.Gemini: gemini.GeminiNode,
+    NodeModelTypes.GeminiRAG: gemini_rag.GeminiRAGNode,
     NodeModelTypes.FileReader: file_reader.FileReader,
     NodeModelTypes.ResumeAnalysis: resume_analysis.ResumeAnalysisNode,
     NodeModelTypes.SummarizerNode: summarizer.SummarizerNode,
@@ -42,5 +43,6 @@ NodeTypeClassMappings = {
     NodeModelTypes.RedditBotNode: reddit_bot.RedditBotNode,
     NodeModelTypes.CompanyEnrichmentNode: company_enrichment.CompanyEnrichmentNode,
     NodeModelTypes.SheetWriterNode: sheet_writer.SheetWriterNode,
-    NodeModelTypes.ScoringNode: scoring.ScoringNode
+    NodeModelTypes.ScoringNode: scoring.ScoringNode,
+    NodeModelTypes.YouTubeCommentsRetriever: yt_comments.YouTubeCommentsRetriever,
 }

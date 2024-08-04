@@ -5,7 +5,7 @@ import pandas as pd
 
 from llama_index.core import VectorStoreIndex, Settings
 from llama_index.core import Document
-from llama_index.core.node_parser import JSONNodeParser
+from llama_index.core.node_parser import JSONNodeParser, SimpleNodeParser
 from llama_index.llms.gemini import Gemini
 from llama_index.embeddings.gemini import GeminiEmbedding
 from llama_index.core import VectorStoreIndex, get_response_synthesizer
@@ -53,7 +53,8 @@ class InMemoryRAG():
         embed_model = GeminiEmbedding(model_name="models/embedding-001", 
                                     api_key=GEMINI_API_KEY,
                                     title="this is a document")
-        self.nodeparser = JSONNodeParser()
+        self.jsonnodeparser = JSONNodeParser()
+        self.textnodeparser = SimpleNodeParser()
         self.index = VectorStoreIndex(nodes = [], embed_model=embed_model)
 
         self.retriever = VectorIndexRetriever(
@@ -75,15 +76,20 @@ class InMemoryRAG():
     def add_documents_from_df(self, df: pd.DataFrame):
         json_documents = df.to_dict('records')
         documents = [Document(text=json.dumps(doc)) for doc in json_documents]
-        nodes = self.nodeparser.get_nodes_from_documents(documents)
+        nodes = self.jsonnodeparser.get_nodes_from_documents(documents)
         self.index.insert_nodes(nodes)
 
     def add_documents_from_json(self, json_documents):
        
         documents = [Document(text=json.dumps(doc)) for doc in json_documents]
-        nodes = self.nodeparser.get_nodes_from_documents(documents)
+        nodes = self.jsonnodeparser.get_nodes_from_documents(documents)
         self.index.insert_nodes(nodes)
 
+    def add_documents_from_list(self, documents):
+        documents = [Document(text=doc) for doc in documents]
+        nodes = self.textnodeparser.get_nodes_from_documents(documents)
+        self.index.insert_nodes(nodes)
+        
     def query(self, query: str):
         return self.query_engine.query(query)
 

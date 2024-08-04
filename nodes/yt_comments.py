@@ -4,7 +4,7 @@ from nodes.base_node import BaseNode, NodeType, BaseNodeInput, InputType
 from services.youtube_scraper import fetch_youtube_comments
 
 
-class YouTubeScraperNode(BaseNode):
+class YouTubeCommentsRetriever(BaseNode):
 
     def __init__(self, **kwargs):
         if kwargs:
@@ -15,9 +15,9 @@ class YouTubeScraperNode(BaseNode):
                 BaseNodeInput("max_results", InputType.INTERNAL_ONLY, "text"),
             ]
             super().__init__(
-                id='youtube_scraper',
-                name="YouTube Scraper",
-                icon_url="https://cdn-icons-png.flaticon.com/512/1384/1384060.png",
+                id='yt_comments',
+                name="YouTube Comments Retriever",
+                icon_url="https://cdn-icons-png.flaticon.com/512/174/174883.png",
                 description="Scrape comments from YouTube videos",
                 node_type=NodeType.AI.value,
                 is_active=True,
@@ -47,7 +47,7 @@ class YouTubeScraperNode(BaseNode):
         final_response = []
         for comments in response:
             comment_authors = "\n".join([comment['author'] for comment in comments])
-            comment_texts = "\n".join([comment['text'] for comment in comments])
+            comment_texts = "<sep>".join([comment['text'] for comment in comments])
             comment_likes = "\n".join([str(comment['likes']) for comment in comments])
             comment_dates = "\n".join([comment['published_at'] for comment in comments])
             
