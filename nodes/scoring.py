@@ -79,9 +79,8 @@ class ScoringNode(BaseNode):
         results = []
         for _data in data:
             prompt = SCORE_PROMPT.format(data=_data, criteria=criteria, domain_criteria=domain_criteria)
-            results.append(gemini_service.generate_json_response(prompt, name="scoring", stream=False))
+            results.append(gemini_service.generate_cached_json_response(prompt, name="scoring", stream=False))
 
         results = await asyncio.gather(*results)
 
-        response_json = [json.loads(result) for result in results]
-        return [{"score": response_json.get("score"), "reasoning": response_json.get("reasoning")} for response_json in response_json]
+        return [{"score": response_json.get("score"), "reasoning": response_json.get("reasoning")} for response_json in results]

@@ -1,5 +1,4 @@
 import asyncio
-import json
 import re
 
 from nodes.base_node import BaseNode, BaseNodeInput, InputType
@@ -36,7 +35,14 @@ You must return ONLY the JSON output in requested schema. Do not include markdow
 CONSOLIDATOR_PROMPT = """
 The following is the extracted information from various sources about a candidate applying for a job as a software engineer.
 Your task is to format the information into a human-readable report.
-Consolidate the information but make sure you do not lose any important details.
+The report should be elaborate and should include all the important details.
+Divide the report into following sections:
+- Personal Information
+- Work Experience
+- Skills
+- Strengths
+- Weaknesses
+- Github Information
 
 RESUME INFORMATION:
 \\\
@@ -99,14 +105,13 @@ class ResumeAnalysisNode(BaseNode):
         """
         gemini_service = GeminiService()
         formatted_prompt = EXTRACTOR_PROMPT.format(resume=file_content, instructions=instructions)
-        extracted_information = await gemini_service.generate_cached_response(formatted_prompt, name="resume_analysis",
+        extracted_information = await gemini_service.generate_cached_json_response(formatted_prompt, name="resume_analysis",
                                                                               stream=False)
-        extracted_information_json = json.loads(extracted_information)
 
-        name = extracted_information_json.get("name")
-        current_employer = extracted_information_json.get("current_employer")
-        github_url = extracted_information_json.get("github_url")
-        linkedin_url = extracted_information_json.get("linkedin_url")
+        name = extracted_information.get("name")
+        current_employer = extracted_information.get("current_employer")
+        github_url = extracted_information.get("github_url")
+        linkedin_url = extracted_information.get("linkedin_url")
         print("LLM Found github url", github_url)
 
         if not github_url and False:  # TODO: Remove this False
@@ -115,7 +120,7 @@ class ResumeAnalysisNode(BaseNode):
         print(f"awaiting website content {github_url}")
         github_data = await scrape_website_content(github_url, 30000)
 
-        resume_data = extracted_information_json["work_experience"] + extracted_information_json["skills"]
+        resume_data = extracted_information["work_experience"] + extracted_information["skills"]
         consolidator_prompt = CONSOLIDATOR_PROMPT.format(resume=resume_data, github=github_data,
                                                          instructions=instructions)
         response = await gemini_service.generate_cached_response(consolidator_prompt, name="resume_analysis",

@@ -30,7 +30,7 @@ class RedditService:
 
         # Fetch hot posts
         posts = []
-        for post in subreddit.hot(limit=post_limit):
+        for post in subreddit.top(limit=post_limit, time_filter="week"):
             posts.append([
                 post.title,
                 post.score,

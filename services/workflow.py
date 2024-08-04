@@ -8,6 +8,7 @@ from typing import Dict, List
 from databases.models.workflow_schema import WorkflowSchema
 from databases.models.workflow_node import WorkFlowNode
 
+
 # class Edge:
 #     def __init__(self):
 #         self.target
@@ -67,7 +68,8 @@ class WorkflowService:
         self.workflow_run_repo.add_or_update(workflow_run)
         return workflow_run
 
-    async def update_workflow_run(self, run: WorkflowRun, nodes: List[WorkFlowNode], edges: List[Dict[str, str]], executed_at: float):
+    async def update_workflow_run(self, run: WorkflowRun, nodes: List[WorkFlowNode], edges: List[Dict[str, str]],
+                                  executed_at: float):
         run.nodes = nodes
         run.edges = edges
         run.status = "completed"
@@ -86,8 +88,7 @@ class WorkflowExecutorService:
     input_edges: List[Dict[str, str]] = []
     execution_order = []
     workflow_service = WorkflowService()
-    parent_node_map: Dict[str, List] = {}
-    run= None
+    run = None
 
     def __init__(self, workflow_id: str):
         self.workflow_id = workflow_id
@@ -95,7 +96,6 @@ class WorkflowExecutorService:
         self.node_mapping = {}
         self.adj_list = {}
         self.input_edges = []
-        self.parent_node_map = {}
         self.run = None
 
     def get_start_nodes(self) -> List[str]:
@@ -116,18 +116,17 @@ class WorkflowExecutorService:
                 adj_list[source] = []
 
             adj_list[source].append({'target': target, 'outputHandle': output_handle, "inputHandle": input_handle})
-            if target in self.parent_node_map.keys():
-                self.parent_node_map[target].append(source)
-            else:
-                self.parent_node_map[target] = [source]
 
         self.adj_list = adj_list
 
-    def all_parents_executed(self, node_id: str, visited: set):
-        """ Returns True if all parent nodes of node are already executed else returns False """
-
-        for parent_node in self.parent_node_map[node_id]:
-            if parent_node not in visited:
+    def all_edges_executed(self, node_id: str, visited: set):
+        """
+        Returns if all the input edges of a node are executed
+        """
+        input_edges = [edge for edge in self.input_edges if edge['target'] == node_id]
+        for edge in input_edges:
+            handle_key = f"{edge["inputHandle"]}-{edge["outputHandle"]}"
+            if handle_key not in visited:
                 return False
         return True
 
@@ -158,9 +157,9 @@ class WorkflowExecutorService:
             await self.workflow_service.add_node_to_workflow_run(run=self.run, node=node)
 
             self.execution_order.append(node_id)
-            visited.add(node_id)
 
             for neighbor_info in self.adj_list.get(node_id, []):
+                print(f"Parent {node_id} -> Child {neighbor_info['target']}")
                 target_node_id = neighbor_info['target']
                 input_handle = neighbor_info['inputHandle']
                 output_handle = neighbor_info.get('outputHandle')
@@ -170,18 +169,24 @@ class WorkflowExecutorService:
                         handle_outputs.append(output[output_handle])
 
                 # Recursively gather inputs for each neighboring node
-                await self.gather_and_execute_neighbor(target_node_id, visited, input_handle,
+                await self.gather_and_execute_neighbor(target_node_id, visited, input_handle, output_handle,
                                                        handle_outputs)
 
     async def gather_and_execute_neighbor(self, target_node_id: str, visited: set, input_handle: str,
+                                          output_handle: str,
                                           handle_outputs: any):
         """
         Gather inputs for the neighboring node and execute it if all inputs are available
         """
-        if target_node_id not in visited:
+        print("Gathering inputs for ", target_node_id, (target_node_id not in visited))
+        handle_key = f"{input_handle}-{output_handle}"
+        if handle_key not in visited:
             target_node = self.node_mapping[target_node_id]
             target_node.available_inputs[input_handle] = handle_outputs
-            can_execute = self.all_parents_executed(target_node_id, visited)
+            print("Available Inputs : ", {target_node.node}, " ", target_node.available_inputs.keys())
+            visited.add(handle_key)
+
+            can_execute = self.all_edges_executed(target_node_id, visited)
             if can_execute:
                 try:
                     await self.execute_node(target_node_id, visited, target_node.available_inputs)
