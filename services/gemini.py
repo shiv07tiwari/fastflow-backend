@@ -52,7 +52,7 @@ class GeminiService:
         await set_cached_response_for_hex_code(hex_code, final_response)
         return final_response
 
-    async def generate_cached_json_response(self, prompt, name, stream):
+    async def generate_cached_json_response(self, prompt, name, stream) -> dict:
         hex_code = string_to_hex(prompt)
         print("Generating response for: ", hex_code, " ", name)
         cached_response = await fetch_cached_response_for_hex_code(hex_code)

@@ -44,7 +44,7 @@ class WorkflowService:
         for node in updated_nodes:
             node.workflow = workflow_id
             # Remove all keys from node.available_inputs that contain input in the key
-            node.available_inputs = {k: v for k, v in node.available_inputs.items() if "input" not in k}
+            node.available_inputs = {k: v for k, v in node.available_inputs.items()}
             self.workflow_node_repo.add_or_update(node.id, node.to_dict())
 
         # Soft delete nodes that are not in the updated list

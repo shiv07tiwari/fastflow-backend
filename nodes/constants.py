@@ -11,6 +11,9 @@ class NodeModelTypes:
     CompanyEnrichmentNode = 'company_enrichment'
     ExtractorNode = 'extractor'
 
+    # Data Processing
+    FilterNode = 'filter'
+
     # File processing
     SheetWriterNode = 'sheet_writer'
     ScoringNode = 'scoring'

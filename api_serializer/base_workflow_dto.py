@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Optional, Dict
 
-from services.utils import format_output_edges
+from services.utils import format_output_edges, underscore_to_readable
 from databases.models.workflow_schema import WorkflowSchema
 from databases.models.workflow_node import WorkFlowNode
 from pydantic import BaseModel
@@ -23,6 +23,7 @@ class WorkflowResponseDTO:
     owner: str | None = None
     description: Optional[str] = None
     output_handles: Optional[List[str]] = None
+    variables: Optional[List[Dict[str, str]]] = None
 
     def to_dict(self) -> dict:
         return self.__dict__
@@ -37,6 +38,18 @@ class WorkflowResponseDTO:
         # This is to maintain consistency with the react webflow builder
         edges = format_output_edges(workflow.edges)
 
+        workflow_output_variables = []
+
+        for node in nodes:
+            node_outputs = node.outputs
+            node_name = node.node
+            if not len(node_outputs) > 0:
+                continue
+            for output_key in node_outputs[0].keys():
+                workflow_output_variables.append({'key': f"{node_name}.{output_key}", "value": f"{underscore_to_readable(node_name)} - {output_key}"})
+
+        print("Workflow Node Output: ", workflow_output_variables)
+
         return WorkflowResponseDTO(
             id=workflow.id,
             name=workflow.name,
@@ -44,4 +57,5 @@ class WorkflowResponseDTO:
             owner=workflow.owner,
             nodes=nodes,
             edges=edges,
+            variables=workflow_output_variables
         )

@@ -9,7 +9,7 @@ class FileReader(BaseNode):
             super().__init__(**kwargs)
         else:
             inputs = [
-                BaseNodeInput("file_path", InputType.INTERNAL_ONLY, "file", is_required=True),
+                BaseNodeInput("file_path", InputType.COMMON, "file", is_required=True),
             ]
             super().__init__(
                 id='file_reader',
@@ -36,6 +36,7 @@ class FileReader(BaseNode):
         for path in file_path:
             if not path:
                 continue
+            path = path.replace('https://storage.googleapis.com/fastflow-81dd7.appspot.com/', '')
             try:
                 file_contents = repo.read_file(path)
                 if path.endswith('.pdf'):
@@ -48,7 +49,7 @@ class FileReader(BaseNode):
                     return {"error": f"Unsupported file type for {path}"}
                 response.append({
                     "response": file_contents,
-                    "links": links
+                    "links": str(links)
                 })
             except Exception as e:
                 return {"error": str(e)}

@@ -17,6 +17,7 @@ Your task is to extract some key information from the resume and answer the foll
 5. Return the candidate's valid Github Profile URL. If the candidate does not have a Github profile, return an empty string.
 If the link is partial, then also return a valid Github URL with domain and username.
 6. Return the candidate's valid LinkedIn Profile URL. If the candidate does not have a LinkedIn profile, return an empty string.
+7. What is the candidate's email address? If the address is partial, make sure to return a valid email address.
 If the link is partial, then also return a valid LinkedIn URL with domain.
 
 
@@ -33,6 +34,7 @@ Return the answers in a JSON with the following keys:
 - skills [string]
 - github_url
 - linkedin_url
+- email
 You must return ONLY the JSON output in requested schema. Do not include markdown triple backticks around your output.
 """
 
@@ -92,7 +94,7 @@ class ResumeAnalysisNode(BaseNode):
             node_type="ai",
             is_active=True,
             inputs=inputs,
-            outputs=["name", "response"],
+            outputs=["name", "response", "email"],
         )
 
     async def google_search_for_github_url(self, name, current_employer):
@@ -114,6 +116,7 @@ class ResumeAnalysisNode(BaseNode):
 
         name = extracted_information.get("name") or 'Not Available'
         current_employer = extracted_information.get("current_employer") or 'Not Available'
+        email = extracted_information.get("email") or 'Not Available'
         github_url = extracted_information.get("github_url")
         linkedin_url = extracted_information.get("linkedin_url")
         print("LLM Found github url", github_url)
@@ -132,7 +135,7 @@ class ResumeAnalysisNode(BaseNode):
         response = await gemini_service.generate_cached_response(consolidator_prompt, name="resume_analysis",
                                                                  stream=False)
 
-        return response, name
+        return response, name, email
 
     async def execute(self, input: dict) -> []:
         file_output = input.get("input_resume")
@@ -147,4 +150,4 @@ class ResumeAnalysisNode(BaseNode):
             responses.append(response)
 
         responses = await asyncio.gather(*responses)
-        return [{"response": response, "name": name} for response, name in responses]
+        return [{"response": response, "name": name, "email":email} for response, name, email in responses]

@@ -55,3 +55,6 @@ def string_to_hex(string: str) -> str:
     truncated_hash_hex = full_hash_hex[:16]
 
     return truncated_hash_hex
+
+def underscore_to_readable(text: str) -> str:
+    return ' '.join([word.capitalize() for word in text.split('_')])
