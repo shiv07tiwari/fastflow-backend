@@ -56,7 +56,7 @@ class GeminiNode(BaseNode):
             except Exception as e:
                 print(f"Error in executing node {self.name}: {e}")
                 raise e
-            response.append(llm_response)
+            response.append(str(llm_response))
         return {
             "response": response
         }

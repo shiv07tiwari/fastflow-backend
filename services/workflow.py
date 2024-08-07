@@ -27,17 +27,20 @@ class WorkflowService:
     def __init__(self):
         pass
 
-    async def update_workflow_post_execution(self, workflow_id, nodes: List[str], edges, name=None):
+    async def update_workflow_post_execution(self, workflow_id, nodes: List[str], edges, run_id: str, name=None):
         workflow = self.workflow_repo.fetch_by_id(workflow_id)
         workflow.set_edges(edges)
         workflow.set_nodes(nodes)
         workflow.id = workflow_id
+        workflow.latest_run_id = run_id
         if name:
             workflow.name = name
         self.workflow_repo.add_or_update(workflow)
 
-    async def update_nodes_post_execution(self, workflow_id, updated_nodes):
-        updated_node_ids = [node.id for node in updated_nodes]
+    async def fetch_workflow_node_by_id(self, node_id) -> WorkFlowNode:
+        return self.workflow_node_repo.fetch_by_id(node_id)
+
+    async def update_nodes_post_execution(self, workflow_id, updated_nodes, workflow_node_ids):
         original_nodes = self.workflow_node_repo.fetch_all_by_workflow_id(workflow_id)
 
         # Update or create new nodes
@@ -49,7 +52,9 @@ class WorkflowService:
 
         # Soft delete nodes that are not in the updated list
         for node in original_nodes:
-            if node.id not in updated_node_ids:
+            # Not using updated_nodes as it is possible that other nodes have not yet executed and something failed
+            # D not delete those
+            if node.id not in workflow_node_ids:
                 node.is_deleted = True
                 node.workflow = None
                 self.workflow_node_repo.add_or_update(node.id, node.to_dict())
@@ -59,13 +64,17 @@ class WorkflowService:
         self.workflow_run_repo.add_or_update(run)
 
     async def initiate_workflow_run(self, workflow_id: str, run_id: str, num_nodes: int) -> WorkflowRun:
+        try:
+            run = self.workflow_run_repo.get(run_id)
+        except Exception as e:
+            run = None
         started_at = datetime.datetime.now().timestamp() * 1000
         workflow_run = WorkflowRun(
             id=run_id,
             workflow_id=workflow_id,
             started_at=started_at,
             num_nodes=num_nodes,
-            status="running"
+            status="RUNNING" if not run else run.status
         )
         self.workflow_run_repo.add_or_update(workflow_run)
         return workflow_run
@@ -74,13 +83,19 @@ class WorkflowService:
                                   executed_at: float):
         run.nodes = nodes
         run.edges = edges
-        run.status = "completed"
+        run.mark_success()
         run.executed_at = executed_at
         self.workflow_run_repo.add_or_update(run)
 
     async def mark_workflow_run_failed(self, run: WorkflowRun):
-        run.status = "failed"
+        run.mark_failed()
         self.workflow_run_repo.add_or_update(run)
+
+    async def mark_workflow_run_waiting_for_approval(self, run: WorkflowRun, nodeId: str):
+        run.mark_waiting_for_approval()
+        run.approve_node = nodeId
+        self.workflow_run_repo.add_or_update(run)
+
 
 
 class WorkflowExecutorService:
@@ -91,6 +106,8 @@ class WorkflowExecutorService:
     execution_order = []
     workflow_service = WorkflowService()
     run = None
+    is_approval_flow = False
+    is_human_approval_required = False
 
     def __init__(self, workflow_id: str):
         self.workflow_id = workflow_id
@@ -99,6 +116,8 @@ class WorkflowExecutorService:
         self.adj_list = {}
         self.input_edges = []
         self.run = None
+        self.is_approval_flow = False
+        self.is_human_approval_required = False
 
     def get_start_nodes(self) -> List[str]:
         all_nodes = set(self.adj_list.keys())
@@ -140,7 +159,7 @@ class WorkflowExecutorService:
         :param input_data: Input data for the node [mostly coming from parent node]
         """
 
-        if node_id not in visited:
+        if node_id not in visited and self.is_human_approval_required is False:
             # Get the current node
             node: WorkFlowNode = self.node_mapping[node_id]
             base_node = node.get_node()
@@ -157,8 +176,12 @@ class WorkflowExecutorService:
             node.available_inputs = available_inputs
             # TODO: Make this async
             await self.workflow_service.add_node_to_workflow_run(run=self.run, node=node)
-
             self.execution_order.append(node_id)
+
+            if not self.is_approval_flow and base_node.id == "human_approval":
+                await self.workflow_service.mark_workflow_run_waiting_for_approval(self.run, node.id)
+                self.is_human_approval_required = True
+                return
 
             for neighbor_info in self.adj_list.get(node_id, []):
                 print(f"Parent {node_id} -> Child {neighbor_info['target']}")
@@ -198,7 +221,7 @@ class WorkflowExecutorService:
             else:
                 print(f"not now: {target_node.get_node().name}")
 
-    async def execute(self, nodes: list, edges: list, run_id: str) -> WorkflowRun:
+    async def execute(self, nodes: list, edges: list, run_id: str, orign_node_id: str | None) -> WorkflowRun:
         """
         DFS traversal of the workflow graph
         @param nodes: List of nodes from frontend.
@@ -210,6 +233,19 @@ class WorkflowExecutorService:
         self.run = await self.workflow_service.initiate_workflow_run(self.workflow_id, run_id, num_nodes=len(nodes))
 
         workflow_nodes = [WorkFlowNode(**node) for node in nodes]
+
+        origin_node = [node for node in workflow_nodes if node.id == orign_node_id][0] if orign_node_id else None
+        if origin_node:
+            origin_node_prev_version = await self.workflow_service.fetch_workflow_node_by_id(orign_node_id)
+            origin_node.available_inputs = origin_node_prev_version.available_inputs
+            if origin_node.node == "human_approval":
+                origin_node.available_inputs["is_approved"] = True
+                self.is_approval_flow = True
+
+            # Append origin node to workflow_nodes, replace the existing node
+            workflow_nodes = [node for node in workflow_nodes if node.id != orign_node_id]
+            workflow_nodes.append(origin_node)
+
         self.node_mapping = {node.id: node for node in workflow_nodes}
 
         # Cleanup edges which have an invalid source or target
@@ -219,24 +255,25 @@ class WorkflowExecutorService:
         self._create_adjacency_list(workflow_nodes)
 
         visited = set()
-        start_nodes = self.get_start_nodes()
+        start_nodes = self.get_start_nodes() if not orign_node_id else [orign_node_id]
         for start_node in start_nodes:
             await self.execute_node(start_node, visited)
 
         # Sort node mapping by execution order
         self.node_mapping = {node_id: self.node_mapping[node_id] for node_id in self.execution_order}
+        updated_nodes = list(self.node_mapping.values())
 
         # TODO: Do the following in a background task
-        updated_nodes = list(self.node_mapping.values())
-        updated_node_ids = [node.id for node in updated_nodes]
-        await self.workflow_service.update_workflow_post_execution(self.workflow_id, updated_node_ids, edges)
-        await self.workflow_service.update_nodes_post_execution(self.workflow_id, updated_nodes)
+        workflow_node_ids = [node.id for node in workflow_nodes]
+        await self.workflow_service.update_workflow_post_execution(self.workflow_id, workflow_node_ids, edges, run_id)
+        await self.workflow_service.update_nodes_post_execution(self.workflow_id, updated_nodes, workflow_node_ids)
         executed_at = datetime.datetime.now().timestamp() * 1000
-        await self.workflow_service.update_workflow_run(
-            self.run,
-            list(self.node_mapping.values()),
-            edges,
-            executed_at
-        )
+        if not self.is_human_approval_required:
+            await self.workflow_service.update_workflow_run(
+                self.run,
+                list(self.node_mapping.values()),
+                edges,
+                executed_at
+            )
 
         return self.run

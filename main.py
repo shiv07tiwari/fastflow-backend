@@ -57,12 +57,13 @@ async def run_workflow(request: WorkflowRunRequest):
     This currently only supports serial execution of the workflow
     """
     workflow_id = request.id
+    node_id = request.node_id
 
     formatted_edges = format_input_edges(request.edges)
 
     workflow_executor_service = WorkflowExecutorService(workflow_id=workflow_id)
     # Workflow is executed and the mapping of node_id to node is returned
-    run = await workflow_executor_service.execute(request.nodes, formatted_edges, request.run_id)
+    run = await workflow_executor_service.execute(request.nodes, formatted_edges, request.run_id, orign_node_id=node_id)
     return run
 
 
@@ -75,7 +76,11 @@ async def get_workflow(workflow_id: str):
     """
     workflow = WorkflowRepository().fetch_by_id(workflow_id)
     nodes = WorkflowNodeRepository().fetch_all_by_workflow_id(workflow_id)
-    return WorkflowResponseDTO.to_response(workflow, nodes)
+    try:
+        run = WorkflowRunRepository().get(workflow.latest_run_id)
+    except Exception:
+        run = None
+    return WorkflowResponseDTO.to_response(workflow, nodes, run)
 
 
 @app.post("/workflow")
@@ -92,7 +97,7 @@ async def update_workflow(request: WorkflowResponseDTO):
     updated_node_ids = [node.id for node in payload.get("nodes")]
     try:
         await workflow_service.update_workflow_post_execution(workflow_id, updated_node_ids, payload['edges'], name)
-        await workflow_service.update_nodes_post_execution(workflow_id, payload["nodes"])
+        await workflow_service.update_nodes_post_execution(workflow_id, payload["nodes"], updated_node_ids)
         return {"success": True, "error": None}
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -174,7 +179,7 @@ async def workflow_nodes_websocket(websocket: WebSocket, run_id: str):
                 print("Closing as all nodes found")
                 await websocket.close()
                 break
-            if data.status in ["failed", "completed"]:
+            if data.is_completed:
                 print("Closing as status is ", data.status)
                 await websocket.close()
                 break

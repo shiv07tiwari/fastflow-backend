@@ -9,6 +9,7 @@ class HumanApproval(BaseNode):
         else:
             inputs = [
                 BaseNodeInput("data", InputType.EXTERNAL_ONLY, "text", is_required=True),
+                BaseNodeInput("is_approved", InputType.INTERNAL_ONLY, "boolean"),
             ]
             super().__init__(
                 id='human_approval',
@@ -23,9 +24,10 @@ class HumanApproval(BaseNode):
 
     async def execute(self, input: dict):
         data = input.get("data")
+        is_approved = input.get("is_approved")
         if not isinstance(data, list):
             data = [data]
 
         return [
-            {"data": d} for d in data
+            {"data": d, "is_approved": is_approved} for d in data
         ]
