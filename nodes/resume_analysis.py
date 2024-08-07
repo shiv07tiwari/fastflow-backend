@@ -29,8 +29,8 @@ The resume is as follows:
 Return the answers in a JSON with the following keys:
 - name
 - current_employer
-- work_experience
-- skills
+- work_experience [string]
+- skills [string]
 - github_url
 - linkedin_url
 You must return ONLY the JSON output in requested schema. Do not include markdown triple backticks around your output.
@@ -112,13 +112,13 @@ class ResumeAnalysisNode(BaseNode):
         extracted_information = await gemini_service.generate_cached_json_response(formatted_prompt, name="resume_analysis",
                                                                               stream=False)
 
-        name = str(extracted_information.get("name"))
-        current_employer = extracted_information.get("current_employer")
+        name = extracted_information.get("name") or 'Not Available'
+        current_employer = extracted_information.get("current_employer") or 'Not Available'
         github_url = extracted_information.get("github_url")
         linkedin_url = extracted_information.get("linkedin_url")
         print("LLM Found github url", github_url)
-        work_experience = str(extracted_information.get("work_experience"))
-        skills = str(extracted_information.get("skills"))
+        work_experience = str(extracted_information.get("work_experience")) or "Not Available"
+        skills = str(extracted_information.get("skills")) or "Not Available"
 
         if not github_url and False:  # TODO: Remove this False
             github_url = await self.google_search_for_github_url(name, current_employer)

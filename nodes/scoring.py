@@ -84,4 +84,4 @@ class ScoringNode(BaseNode):
 
         results = await asyncio.gather(*results)
 
-        return [{"score": response_json.get("score"), "reasoning": response_json.get("reasoning")} for response_json in results]
+        return [{"score": str(response_json.get("score")), "reasoning": response_json.get("reasoning")} for response_json in results]

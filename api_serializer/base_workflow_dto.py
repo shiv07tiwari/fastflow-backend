@@ -16,11 +16,11 @@ class WorkflowRunRequest(BaseModel):
 
 @dataclass
 class WorkflowResponseDTO:
-    id: str
-    name: str
-    owner: str
-    nodes: List[WorkFlowNode]
-    edges: List[Dict[str, str]]
+    id: str | None = None
+    name: str | None = None
+    nodes: List[WorkFlowNode] | None = None
+    edges: List[Dict[str, str]] | None = None
+    owner: str | None = None
     description: Optional[str] = None
     output_handles: Optional[List[str]] = None
 

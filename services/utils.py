@@ -15,8 +15,8 @@ def format_input_edges(edges):
     for edge in edges:
         edge_output = {
             **edge,
-            "outputHandle": edge.get('sourceHandle', "response"),
-            "inputHandle": edge.get('targetHandle', None)
+            "outputHandle": edge.get('sourceHandle') or edge.get('outputHandle'),
+            "inputHandle": edge.get('targetHandle') or edge.get('inputHandle')
         }
         # Remove all keys that are not string or are not required
         edge_output.pop('sourceHandle', None)

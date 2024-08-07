@@ -14,3 +14,6 @@ class NodeModelTypes:
     # File processing
     SheetWriterNode = 'sheet_writer'
     ScoringNode = 'scoring'
+
+    # Conditionals
+    HumanApprovalNode = 'human_approval'

@@ -27,11 +27,13 @@ class WorkflowService:
     def __init__(self):
         pass
 
-    async def update_workflow_post_execution(self, workflow_id, nodes: List[str], edges):
+    async def update_workflow_post_execution(self, workflow_id, nodes: List[str], edges, name=None):
         workflow = self.workflow_repo.fetch_by_id(workflow_id)
         workflow.set_edges(edges)
         workflow.set_nodes(nodes)
         workflow.id = workflow_id
+        if name:
+            workflow.name = name
         self.workflow_repo.add_or_update(workflow)
 
     async def update_nodes_post_execution(self, workflow_id, updated_nodes):

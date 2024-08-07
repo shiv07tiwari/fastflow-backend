@@ -1,5 +1,5 @@
 from nodes import combine_text, user_input, gemini, web_scraper, file_reader, resume_analysis, summarizer, zip_reader, \
-    reddit_bot, company_enrichment, scoring, extractor
+    reddit_bot, company_enrichment, scoring, extractor, human_approval
 from nodes.constants import NodeModelTypes
 from nodes.file_processing import sheet_writer
 
@@ -43,5 +43,6 @@ NodeTypeClassMappings = {
     NodeModelTypes.CompanyEnrichmentNode: company_enrichment.CompanyEnrichmentNode,
     NodeModelTypes.SheetWriterNode: sheet_writer.SheetWriterNode,
     NodeModelTypes.ScoringNode: scoring.ScoringNode,
-    NodeModelTypes.ExtractorNode: extractor.ExtractorNode
+    NodeModelTypes.ExtractorNode: extractor.ExtractorNode,
+    NodeModelTypes.HumanApprovalNode: human_approval.HumanApproval
 }

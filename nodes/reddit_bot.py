@@ -33,7 +33,7 @@ class RedditBotNode(BaseNode):
         query = input.get("query", '')
 
         if isinstance(subreddit, list):
-            raise ValueError("Subreddit should be a string")
+            subreddit = subreddit[0]
 
         if not isinstance(query, list):
             query = [query]
