@@ -29,5 +29,5 @@ class HumanApproval(BaseNode):
             data = [data]
 
         return [
-            {"data": d, "is_approved": is_approved} for d in data
+            {"data": d} for d in data
         ]

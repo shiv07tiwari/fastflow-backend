@@ -57,7 +57,8 @@ class WorkflowResponseDTO:
             "workflow_id": run.workflow_id,
             "started_at": run.started_at,
             "executed_at": run.executed_at,
-            "status": run.status
+            "status": run.status,
+            "approve_node": run.approve_node
         } if run else {}
 
         return WorkflowResponseDTO(
