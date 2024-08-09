@@ -14,3 +14,14 @@ class NodeModelTypes:
     SheetWriterNode = 'sheet_writer'
     ScoringNode = 'scoring'
     GeminiRAG = 'gemini_rag'
+    ExtractorNode = 'extractor'
+
+    # Data Processing
+    FilterNode = 'filter'
+
+    # File processing
+    SheetWriterNode = 'sheet_writer'
+    ScoringNode = 'scoring'
+
+    # Conditionals
+    HumanApprovalNode = 'human_approval'

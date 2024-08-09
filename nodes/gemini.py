@@ -52,11 +52,11 @@ class GeminiNode(BaseNode):
             }
             formatted_prompt = prompt.format(**_input)
             try:
-                llm_response = await service.generate_response(prompt=formatted_prompt, name=self.name, stream=None)
+                llm_response = await service.generate_cached_response(prompt=formatted_prompt, name=self.name, stream=None)
             except Exception as e:
                 print(f"Error in executing node {self.name}: {e}")
                 raise e
-            response.append(llm_response)
+            response.append(str(llm_response))
         return {
             "response": response
         }

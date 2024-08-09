@@ -13,6 +13,8 @@ class CombineTextNode(BaseNode):
             inputs = [
                 BaseNodeInput("input_text_1", InputType.COMMON, "text", is_required=True),
                 BaseNodeInput("input_text_2", InputType.COMMON, "text"),
+                BaseNodeInput("input_text_3", InputType.COMMON, "text"),
+                BaseNodeInput("base_input", InputType.INTERNAL_ONLY, "text"),
             ]
             super().__init__(
                 id='combine_text',
@@ -30,18 +32,30 @@ class CombineTextNode(BaseNode):
     async def execute(self, input: dict) -> []:
         input_text_1 = input.get("input_text_1")
         input_text_2 = input.get("input_text_2")
+        input_text_3 = input.get("input_text_3")
+        base_input = input.get("base_input")
 
         if not isinstance(input_text_2, list):
             input_text_2 = [input_text_2]
         if not isinstance(input_text_1, list):
             input_text_1 = [input_text_1]
+        if not isinstance(input_text_3, list):
+            input_text_3 = [input_text_3]
 
-        combined_text = ""
-        for text in input_text_1 + input_text_2:
-            if text is not None:
-                combined_text += str(text).strip() + " "
 
-        return [combined_text]
+        combined_text = []
+        max_length = max(len(input_text_1), len(input_text_2), len(input_text_3))
+        for i in range(max_length):
+            text1 = input_text_1[i] if i < len(input_text_1) else ''
+            text2 = input_text_2[i] if i < len(input_text_2) else ''
+            text3 = input_text_3[i] if i < len(input_text_3) else ''
+            combined_text.append(base_input.format(text1=text1, text2=text2, text3=text3))
+
+        return [
+            {
+                "combined_text": text
+            } for text in combined_text
+        ]
 
     def can_execute(self, inputs: dict) -> bool:
         return len(inputs) == self.total_inputs_to_combine

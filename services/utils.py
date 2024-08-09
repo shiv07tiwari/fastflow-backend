@@ -15,8 +15,8 @@ def format_input_edges(edges):
     for edge in edges:
         edge_output = {
             **edge,
-            "outputHandle": edge.get('sourceHandle', "response"),
-            "inputHandle": edge.get('targetHandle', None)
+            "outputHandle": edge.get('sourceHandle') or edge.get('outputHandle'),
+            "inputHandle": edge.get('targetHandle') or edge.get('inputHandle')
         }
         # Remove all keys that are not string or are not required
         edge_output.pop('sourceHandle', None)
@@ -55,3 +55,6 @@ def string_to_hex(string: str) -> str:
     truncated_hash_hex = full_hash_hex[:16]
 
     return truncated_hash_hex
+
+def underscore_to_readable(text: str) -> str:
+    return ' '.join([word.capitalize() for word in text.split('_')])

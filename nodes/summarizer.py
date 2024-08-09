@@ -8,8 +8,9 @@ Your task is to summarize the following text:
 {input_content}
 
 Instructions for summarizing:
-- Remove all new lines and weird characters from the response.
+- Think about the content of the text and only summarize the important parts.
 - It should not lose the context of the text.
+- It should be human readable and easy to understand.
 
 """
 
@@ -45,7 +46,7 @@ class SummarizerNode(BaseNode):
         responses = []
         for content in input_content:
             formatted_prompt = PROMPT.format(input_content=content)
-            response = gemini_service.generate_response(prompt=formatted_prompt, name=self.name, stream=False)
+            response = gemini_service.generate_cached_response(prompt=formatted_prompt, name=self.name, stream=False)
             responses.append(response)
         responses = await asyncio.gather(*responses)
 

@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import json
 import os
 
@@ -9,14 +10,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from databases.fixtures import Fixtures
+from databases.models.workflow_schema import WorkflowSchema
 from databases.repository.node import NodeRepository
 from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
 from databases.repository.workflow_run import WorkflowRunRepository
-from services.utils import format_input_edges
+from services.utils import format_input_edges, format_output_edges
 from api_serializer.base_workflow_dto import WorkflowResponseDTO, WorkflowRunRequest
 import google.generativeai as genai
-from services.workflow import WorkflowExecutorService
+from services.workflow import WorkflowExecutorService, WorkflowService
 
 app = FastAPI()
 
@@ -55,12 +57,13 @@ async def run_workflow(request: WorkflowRunRequest):
     This currently only supports serial execution of the workflow
     """
     workflow_id = request.id
+    node_id = request.node_id
 
     formatted_edges = format_input_edges(request.edges)
 
     workflow_executor_service = WorkflowExecutorService(workflow_id=workflow_id)
     # Workflow is executed and the mapping of node_id to node is returned
-    run = await workflow_executor_service.execute(request.nodes, formatted_edges, request.run_id)
+    run = await workflow_executor_service.execute(request.nodes, formatted_edges, request.run_id, orign_node_id=node_id)
     return run
 
 
@@ -73,7 +76,31 @@ async def get_workflow(workflow_id: str):
     """
     workflow = WorkflowRepository().fetch_by_id(workflow_id)
     nodes = WorkflowNodeRepository().fetch_all_by_workflow_id(workflow_id)
-    return WorkflowResponseDTO.to_response(workflow, nodes)
+    try:
+        run = WorkflowRunRepository().get(workflow.latest_run_id)
+    except Exception:
+        run = None
+    return WorkflowResponseDTO.to_response(workflow, nodes, run)
+
+
+@app.post("/workflow")
+async def update_workflow(request: WorkflowResponseDTO):
+    """
+    Update a workflow
+    :param request: WorkflowResponseDTO
+    :return:  Response
+    """
+    workflow_service = WorkflowService()
+    payload = request.to_dict()
+    workflow_id = payload.get("id")
+    name = payload.get("name")
+    updated_node_ids = [node.id for node in payload.get("nodes")]
+    try:
+        await workflow_service.update_workflow_post_execution(workflow_id, updated_node_ids, payload['edges'], name)
+        await workflow_service.update_nodes_post_execution(workflow_id, payload["nodes"], updated_node_ids)
+        return {"success": True, "error": None}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 Fixtures().add_test_data(1)
@@ -96,6 +123,8 @@ async def get_workflow_runs(workflow_id: str):
     workflow_runs = WorkflowRunRepository().fetch_by_workflow_id(workflow_id)
     return workflow_runs
 
+
+# Webhooks
 
 def get_workflow_nodes(workflow_id: str):
     """
@@ -151,7 +180,7 @@ async def workflow_nodes_websocket(websocket: WebSocket, run_id: str):
                 print("Closing as all nodes found")
                 await websocket.close()
                 break
-            if data.status in ["failed", "completed"]:
+            if data.is_completed:
                 print("Closing as status is ", data.status)
                 await websocket.close()
                 break

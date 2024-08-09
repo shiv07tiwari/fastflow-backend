@@ -12,6 +12,7 @@ class SheetWriterNode(BaseNode):
             BaseNodeInput("column_1", InputType.EXTERNAL_ONLY, "text", is_required=True),
             BaseNodeInput("column_2",  InputType.EXTERNAL_ONLY, "text", is_required=True),
             BaseNodeInput("column_3",  InputType.EXTERNAL_ONLY, "text", is_required=True),
+            BaseNodeInput("column_4",  InputType.EXTERNAL_ONLY, "text"),
             BaseNodeInput("headers",  InputType.INTERNAL_ONLY, "text", is_required=True),
         ]
         super().__init__(
@@ -41,10 +42,11 @@ class SheetWriterNode(BaseNode):
         column_1 = input.get("column_1", [])
         column_2 = input.get("column_2", [])
         column_3 = input.get("column_3", [])
-        max_length = max(len(column_1), len(column_2), len(column_3))
+        column_4 = input.get("column_4", [])
+        max_length = max(len(column_1), len(column_2), len(column_3), len(column_4))
 
         if isinstance(column_1, str):
-            rows = [[column_1, column_2, column_3]]
+            rows = [[column_1, column_2, column_3, column_4]]
         else:
             rows = []
             for i in range(max_length):
@@ -52,6 +54,7 @@ class SheetWriterNode(BaseNode):
                 row.append(column_1[i] if i < len(column_1) else "")
                 row.append(column_2[i] if i < len(column_2) else "")
                 row.append(column_3[i] if i < len(column_3) else "")
+                row.append(column_4[i] if i < len(column_4) else "")
                 rows.append(row)
 
         file_path = self.create_csv(headers, rows)

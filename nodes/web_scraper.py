@@ -21,7 +21,7 @@ class WebScraperNode(BaseNode):
                 node_type=NodeType.JOIN.value,
                 is_active=True,
                 inputs=inputs,
-                outputs=["response"],
+                outputs=["data"],
             )
 
     async def execute(self, input: dict) -> []:
@@ -33,7 +33,7 @@ class WebScraperNode(BaseNode):
 
         for u in url:
             data = await scrape_website_content(u, 30000)
-            response.append(data)
+            response.append({"data": data})
 
         return response
 

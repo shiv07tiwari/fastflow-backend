@@ -21,6 +21,6 @@ class NodeRepository:
 
     def fetch_all(self) -> list[BaseNode]:
         data = self.db_controller.list(Tables.Node)
-        return [NodeTypeClassMappings[node['id']](**node) for node in data]
+        return [NodeTypeClassMappings[node['id']](**node) for node in data if node['id'] in NodeTypeClassMappings.keys()]
 
 

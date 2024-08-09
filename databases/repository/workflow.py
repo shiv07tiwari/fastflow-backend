@@ -1,6 +1,7 @@
 from databases.constants import Tables
 from databases.controller import DatabaseController
 from databases.models.workflow_schema import WorkflowSchema
+from services.utils import format_input_edges
 
 
 class WorkflowRepository:
@@ -16,6 +17,7 @@ class WorkflowRepository:
         return WorkflowSchema(**data)
 
     def add_or_update(self, workflow: WorkflowSchema):
+        workflow.edges = format_input_edges(workflow.edges)
         self.db_controller.insert(self.table, workflow.dict(), workflow.id)
 
 

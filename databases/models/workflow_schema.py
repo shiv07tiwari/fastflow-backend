@@ -10,6 +10,7 @@ class WorkflowSchema(BaseModel):
     owner: str | None = None
     nodes: List[str] = []  # Store individual nodes
     edges: List[Dict[str, str]] = []  # Store edges (source, target, sourceHandle)
+    latest_run_id: str | None = None
 
     def __str__(self):
         return f"{self.name} - {self.description or 'No description'}"

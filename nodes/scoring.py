@@ -43,6 +43,7 @@ The criteria is as follows:
 Output a json response with keys as follows:
 - score: The score out of 100 based on the criteria. Key should be "score" and value should be an integer. 
 - reasoning: The reasoning behind the score. Key should be "reasoning" and value should be a string explaining the score.
+Start with the candidate's name in your reasoning.
 
 You must return ONLY the JSON output in this schema. Do not include markdown triple backticks around your output.
 """
@@ -79,9 +80,8 @@ class ScoringNode(BaseNode):
         results = []
         for _data in data:
             prompt = SCORE_PROMPT.format(data=_data, criteria=criteria, domain_criteria=domain_criteria)
-            results.append(gemini_service.generate_json_response(prompt, name="scoring", stream=False))
+            results.append(gemini_service.generate_cached_json_response(prompt, name="scoring", stream=False))
 
         results = await asyncio.gather(*results)
 
-        response_json = [json.loads(result) for result in results]
-        return [{"score": response_json.get("score"), "reasoning": response_json.get("reasoning")} for response_json in response_json]
+        return [{"score": str(response_json.get("score")), "reasoning": response_json.get("reasoning")} for response_json in results]

@@ -49,7 +49,7 @@ class CompanyEnrichmentNode(BaseNode):
 
         web_data = await asyncio.gather(*_web_data)
         web_data_text_blob = " \\ Scraped Information \\ ".join([data for data in web_data if data is not None])
-        response = await gemini_service.generate_response(PROMPT.format(web_data=web_data_text_blob),
+        response = await gemini_service.generate_cached_response(PROMPT.format(web_data=web_data_text_blob),
                                                           name="company_enrichment", stream=False)
         return response
 
