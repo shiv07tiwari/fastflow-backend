@@ -37,8 +37,20 @@ class WorkflowService:
             workflow.name = name
         self.workflow_repo.add_or_update(workflow)
 
+    async def update_workflow(self, workflow_id, nodes: List[str], edges, name=None):
+        workflow = self.workflow_repo.fetch_by_id(workflow_id)
+        workflow.name = name
+        workflow.set_edges(edges)
+        workflow.set_nodes(nodes)
+        if name:
+            workflow.name = name
+        self.workflow_repo.add_or_update(workflow)
+
     async def fetch_workflow_node_by_id(self, node_id) -> WorkFlowNode:
         return self.workflow_node_repo.fetch_by_id(node_id)
+
+    async def get_original_workflow_nodes(self, workflow_id):
+        return self.workflow_node_repo.fetch_all_by_workflow_id(workflow_id)
 
     async def update_nodes_post_execution(self, workflow_id, updated_nodes, workflow_node_ids):
         original_nodes = self.workflow_node_repo.fetch_all_by_workflow_id(workflow_id)
@@ -203,8 +215,8 @@ class WorkflowExecutorService:
         """
         Gather inputs for the neighboring node and execute it if all inputs are available
         """
-        print("Gathering inputs for ", target_node_id, (target_node_id not in visited))
         handle_key = f"{input_handle}-{output_handle}"
+        print("Gathering inputs for ", target_node_id, (handle_key not in visited), input_handle, output_handle)
         if handle_key not in visited:
             target_node = self.node_mapping[target_node_id]
             target_node.available_inputs[input_handle] = handle_outputs
@@ -254,6 +266,8 @@ class WorkflowExecutorService:
 
         self._create_adjacency_list(workflow_nodes)
 
+        workflow_node_ids = [node.id for node in workflow_nodes]
+
         visited = set()
         start_nodes = self.get_start_nodes() if not orign_node_id else [orign_node_id]
         for start_node in start_nodes:
@@ -261,17 +275,19 @@ class WorkflowExecutorService:
 
         # Sort node mapping by execution order
         self.node_mapping = {node_id: self.node_mapping[node_id] for node_id in self.execution_order}
-        updated_nodes = list(self.node_mapping.values())
+        for node in workflow_nodes:
+            if node.id in self.node_mapping:
+                workflow_nodes[workflow_nodes.index(node)] = self.node_mapping[node.id]
 
         # TODO: Do the following in a background task
-        workflow_node_ids = [node.id for node in workflow_nodes]
+
         await self.workflow_service.update_workflow_post_execution(self.workflow_id, workflow_node_ids, edges, run_id)
-        await self.workflow_service.update_nodes_post_execution(self.workflow_id, updated_nodes, workflow_node_ids)
+        await self.workflow_service.update_nodes_post_execution(self.workflow_id, workflow_nodes, workflow_node_ids)
         executed_at = datetime.datetime.now().timestamp() * 1000
         if not self.is_human_approval_required:
             await self.workflow_service.update_workflow_run(
                 self.run,
-                list(self.node_mapping.values()),
+                workflow_nodes,
                 edges,
                 executed_at
             )

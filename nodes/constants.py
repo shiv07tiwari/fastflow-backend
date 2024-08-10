@@ -10,6 +10,11 @@ class NodeModelTypes:
     RedditBotNode = 'reddit_bot'
     CompanyEnrichmentNode = 'company_enrichment'
     ExtractorNode = 'extractor'
+    GeminiImageNode = 'gemini_image'
+
+    # Google
+    GoogleSheetWriterNode = 'google_sheet_writer'
+    EmailDraftNode = 'email_draft'
 
     # Data Processing
     FilterNode = 'filter'
@@ -17,6 +22,7 @@ class NodeModelTypes:
     # File processing
     SheetWriterNode = 'sheet_writer'
     ScoringNode = 'scoring'
+    InvoiceProcessorNode = 'invoice_processor'
 
     # Conditionals
     HumanApprovalNode = 'human_approval'

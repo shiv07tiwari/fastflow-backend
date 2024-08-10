@@ -4,7 +4,6 @@ import uuid
 import pandas as pd
 from nodes.base_node import BaseNode, BaseNodeInput, InputType
 
-
 class SheetWriterNode(BaseNode):
 
     def __init__(self, **kwargs):
@@ -59,11 +58,13 @@ class SheetWriterNode(BaseNode):
 
         file_path = self.create_csv(headers, rows)
         public_url = repo.upload_file(file_path)
-        try:
-            os.remove(file_path)
-        except Exception as e:
-            print(e)
+
+        # sheet = await create_sheet(file_path)
+        # try:
+        #     os.remove(file_path)
+        # except Exception as e:
+        #     print(e)
 
         return {
-            "sheet_url": public_url
+            "sheet_url": "public_url"
         }

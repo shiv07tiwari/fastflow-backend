@@ -12,3 +12,6 @@ class FileUploadRepository:
 
     def upload_file(self, file_path):
         return self.db_controller.upload_to_firebase(file_path)
+
+    def download_file(self, file_path, destination):
+        return self.db_controller.download_file(file_path, destination)

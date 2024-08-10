@@ -2,6 +2,9 @@ import asyncio
 import datetime
 import json
 import os
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.websockets import WebSocketState
@@ -10,12 +13,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from databases.fixtures import Fixtures
-from databases.models.workflow_schema import WorkflowSchema
 from databases.repository.node import NodeRepository
 from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
 from databases.repository.workflow_run import WorkflowRunRepository
-from services.utils import format_input_edges, format_output_edges
+from services.utils import format_input_edges
 from api_serializer.base_workflow_dto import WorkflowResponseDTO, WorkflowRunRequest
 import google.generativeai as genai
 from services.workflow import WorkflowExecutorService, WorkflowService
@@ -26,6 +28,7 @@ load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", None)
 genai.configure(api_key=GEMINI_API_KEY)
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
 origins = [
     "http://localhost",
@@ -96,10 +99,11 @@ async def update_workflow(request: WorkflowResponseDTO):
     name = payload.get("name")
     updated_node_ids = [node.id for node in payload.get("nodes")]
     try:
-        await workflow_service.update_workflow_post_execution(workflow_id, updated_node_ids, payload['edges'], name)
+        await workflow_service.update_workflow(workflow_id, updated_node_ids, payload['edges'], name)
         await workflow_service.update_nodes_post_execution(workflow_id, payload["nodes"], updated_node_ids)
         return {"success": True, "error": None}
     except Exception as e:
+        print(f"Error in updating workflow: {e}")
         return {"success": False, "error": str(e)}
 
 
@@ -121,6 +125,21 @@ async def get_workflow_runs(workflow_id: str):
     """
     workflow_runs = WorkflowRunRepository().fetch_by_workflow_id(workflow_id)
     return workflow_runs
+
+
+@app.post("/login")
+async def login(token: str):
+    try:
+        # Verify the token
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+
+        # Get user info
+        userid = idinfo['sub']
+        email = idinfo['email']
+        return {"message": "Login successful", "user_id": userid, "email": email}
+    except ValueError:
+        print("Invalid token")
+        raise Exception("Invalid token")
 
 
 # Webhooks
@@ -179,7 +198,7 @@ async def workflow_nodes_websocket(websocket: WebSocket, run_id: str):
                 print("Closing as all nodes found")
                 await websocket.close()
                 break
-            if data.is_completed:
+            if data.status != "RUNNING":
                 print("Closing as status is ", data.status)
                 await websocket.close()
                 break
