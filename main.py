@@ -5,7 +5,6 @@ import os
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
-
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.websockets import WebSocketState
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from databases.fixtures import Fixtures
+from databases.repository.google_user import GoogleUserRepository
 from databases.repository.node import NodeRepository
 from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
@@ -70,6 +70,24 @@ async def run_workflow(request: WorkflowRunRequest):
     return run
 
 
+@app.get("/workflows")
+async def get_workflows():
+    """
+    Get all workflows
+    :return:  Response
+    """
+    workflows = WorkflowRepository().fetch_all()
+    formatted_workflows = []
+    for workflow in workflows:
+        nodes = WorkflowNodeRepository().fetch_all_by_workflow_id(workflow.id)
+        try:
+            run = WorkflowRunRepository().get(workflow.latest_run_id)
+        except Exception:
+            run = None
+        formatted_workflows.append(WorkflowResponseDTO.to_response(workflow, nodes, run))
+    return formatted_workflows
+
+
 @app.get("/workflow/{workflow_id}")
 async def get_workflow(workflow_id: str):
     """
@@ -86,7 +104,7 @@ async def get_workflow(workflow_id: str):
     return WorkflowResponseDTO.to_response(workflow, nodes, run)
 
 
-@app.post("/workflow")
+@app.put("/workflow")
 async def update_workflow(request: WorkflowResponseDTO):
     """
     Update a workflow
@@ -104,6 +122,25 @@ async def update_workflow(request: WorkflowResponseDTO):
         return {"success": True, "error": None}
     except Exception as e:
         print(f"Error in updating workflow: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/workflow")
+async def create_workflow(request: WorkflowResponseDTO):
+    """
+    Create a workflow
+    :param request: WorkflowResponseDTO
+    :return:  Response
+    """
+    workflow_service = WorkflowService()
+    payload = request.to_dict()
+    name = payload.get("name") or 'New Workflow'
+    owner = payload.get("owner")
+    try:
+        workflow_id = await workflow_service.create_workflow(name, '', owner)
+        return {"success": True, "error": None, "workflow_id": workflow_id}
+    except Exception as e:
+        print(f"Error in creating workflow: {e}")
         return {"success": False, "error": str(e)}
 
 
@@ -125,21 +162,6 @@ async def get_workflow_runs(workflow_id: str):
     """
     workflow_runs = WorkflowRunRepository().fetch_by_workflow_id(workflow_id)
     return workflow_runs
-
-
-@app.post("/login")
-async def login(token: str):
-    try:
-        # Verify the token
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
-
-        # Get user info
-        userid = idinfo['sub']
-        email = idinfo['email']
-        return {"message": "Login successful", "user_id": userid, "email": email}
-    except ValueError:
-        print("Invalid token")
-        raise Exception("Invalid token")
 
 
 # Webhooks
@@ -209,3 +231,85 @@ async def workflow_nodes_websocket(websocket: WebSocket, run_id: str):
         manager.disconnect(websocket)
     except Exception as e:
         print(f"websocket error: {e}")
+
+
+# Authentication
+from google_auth_oauthlib.flow import Flow
+from dataclasses import dataclass
+from googleapiclient.discovery import build
+
+
+@dataclass
+class GoogleAuthRequest:
+    token: str
+
+
+@dataclass
+class GoogleAuthResponse:
+    is_successful: bool
+    email: str
+    name: str
+    message: str
+    photo_url: str = None
+
+
+def create_flow():
+    flow = Flow.from_client_secrets_file(
+        'client_secrets.json',  # Path to your OAuth2 credentials
+        scopes=[
+            'https://www.googleapis.com/auth/spreadsheets',
+            'https://www.googleapis.com/auth/gmail.compose',
+            'https://www.googleapis.com/auth/drive'
+        ],  # Adjust scopes based on your needs
+        redirect_uri='postmessage',
+    )
+    return flow
+
+
+@app.post("/google-auth")
+async def signup(request: GoogleAuthRequest):
+    token = request.token
+    flow = create_flow()
+    flow.fetch_token(code=token)
+    credentials = flow.credentials
+    service = build('oauth2', 'v2', credentials=credentials)
+    user_info = service.userinfo().get().execute()
+    email = user_info.get('email')
+    name = user_info.get('name')
+    photoUrl = user_info.get('photoUrl')
+
+    google_user_repo = GoogleUserRepository()
+    try:
+        existing_user = google_user_repo.get(email)
+    except Exception:
+        existing_user = None
+
+    if existing_user:
+        return GoogleAuthResponse(is_successful=False, email=email, name=name, message="User already exists")
+    data = {
+        "email": email,
+        "name": name,
+        "created_at": datetime.datetime.now(),
+        "updated_at": datetime.datetime.now(),
+        "code": token,
+        "token": credentials.token,
+        "refresh_token": credentials.refresh_token,
+        "photoUrl": photoUrl
+    }
+    google_user_repo.add_or_update(email, data)
+    return GoogleAuthResponse(is_successful=True, email=email, name=name, message="User created", photo_url=photoUrl)
+
+
+@app.post("/login")
+async def login(token: str):
+    try:
+        # Verify the token
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+
+        # Get user info
+        userid = idinfo['sub']
+        email = idinfo['email']
+        return {"message": "Login successful", "user_id": userid, "email": email}
+    except ValueError:
+        print("Invalid token")
+        raise Exception("Invalid token")

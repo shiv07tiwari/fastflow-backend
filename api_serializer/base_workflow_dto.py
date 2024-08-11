@@ -28,6 +28,7 @@ class WorkflowResponseDTO:
     output_handles: Optional[List[str]] = None
     variables: Optional[List[Dict[str, str]]] = None
     latest_run_data: Optional[Dict[str, str]] = None
+    ai_description: str | None = None
 
     def to_dict(self) -> dict:
         return self.__dict__
@@ -69,5 +70,6 @@ class WorkflowResponseDTO:
             nodes=nodes,
             edges=edges,
             variables=workflow_output_variables,
-            latest_run_data=run_data
+            latest_run_data=run_data,
+            ai_description=workflow.ai_description
         )
