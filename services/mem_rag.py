@@ -29,14 +29,50 @@ class RAGStringQueryEngine(CustomQueryEngine):
             "Answer: "
         )
     
+    rewrite_prompt : PromptTemplate = PromptTemplate(
+            "Here are some documents containing information, they could be a JSON-like paragraphs or normal paragraphs, \n"
+            "interpret them as needed.\n"
+            "---------------------\n"
+            "{context_str}\n"
+            "---------------------\n"
+            "Here is what I want what to retreive from the documents:\n"
+            "{query_str}\n"
+
+            "Rewrite the above query such that it will be more effective in retreiving the documents which can answer"
+            " the query. To be clear, do not return the answer to the query, but rather rewrite the query such that" 
+            " the retreived documents will be more likely to answer the query. Only return the rewritten query, "
+            " do not return anything else. Absolutely nothing else.\n"
+            " For example if the documents are like 'It was really nice, would love to visit again';"
+            " 'The winter here is awesome'; 'The hotel I stayed in was very dirty' "
+            " query is 'What did people like in paris?'"
+            " the rewritten query can be like 'Reviews about paris, including places, weather, environment, cleaniless etc' \n"
+            "Notice how the rewritten query is more effective in retreiving the documents which can answer the query, "
+            "even though the documents don't contain the word paris"
+        )
     retriever: BaseRetriever
     response_synthesizer: BaseSynthesizer
     llm: Gemini
 
-    def custom_query(self, query_str: str):
+    def rewrite_query(self, query_str: str, samples : str = "" ) -> str:
+        """Rewrite query based on RAG document content and intent"""
+        if len(samples):
+            rewritten_query = self.llm.complete(
+                self.rewrite_prompt.format(
+                    context_str=samples,
+                    query_str=query_str,
+                )
+            )
+            return rewritten_query
+        return query_str
+    
+    def custom_query(self, query_str: str, rewrite_query: bool = True) -> str:
         nodes = self.retriever.retrieve(query_str)
+        nodes_text = [n.node.get_content() for n in nodes]
+        if rewrite_query:
+            query_str = self.rewrite_query(query_str,  "__\n\n__".join(nodes_text[:10]))
+            print(query_str)
 
-        context_str = "__\n\n__".join([n.node.get_content() for n in nodes])
+        context_str =  "__\n\n__".join(nodes_text)
         response = self.llm.complete(
             self.qa_prompt.format(context_str=context_str, query_str=query_str)
         )
@@ -90,7 +126,7 @@ class InMemoryRAG():
         nodes = self.textnodeparser.get_nodes_from_documents(documents)
         self.index.insert_nodes(nodes)
         
-    def query(self, query: str):
-        return self.query_engine.query(query)
+    def query(self, query: str, rewrite_query: bool = True):
+        return self.query_engine.custom_query(query)
 
     
