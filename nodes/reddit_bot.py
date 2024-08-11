@@ -27,7 +27,7 @@ class RedditBotNode(BaseNode):
                 **kwargs
             )
 
-    async def execute(self, input: dict) -> list:
+    async def execute(self, input: dict) -> []:
         service = RedditService()
         subreddit = input.get("subreddit", None)
         query = input.get("query", '')

@@ -1,5 +1,5 @@
 from nodes import combine_text, user_input, gemini, web_scraper, file_reader, resume_analysis, summarizer, zip_reader, \
-    reddit_bot, company_enrichment, scoring, yt_comments, gemini_rag, extractor, human_approval, filter, gemini_image, invoice_processor
+    reddit_bot, company_enrichment, scoring, extractor, human_approval, filter, gemini_image, invoice_processor
 from nodes.constants import NodeModelTypes
 from nodes.file_processing import sheet_writer
 from nodes.google import google_sheet_writer, email_draft, google_sheet_reader
@@ -37,7 +37,6 @@ NodeTypeClassMappings = {
     NodeModelTypes.UserInput: user_input.UserInputNode,
     NodeModelTypes.WebScraper: web_scraper.WebScraperNode,
     NodeModelTypes.Gemini: gemini.GeminiNode,
-    NodeModelTypes.GeminiRAG: gemini_rag.GeminiRAGNode,
     NodeModelTypes.FileReader: file_reader.FileReader,
     NodeModelTypes.ResumeAnalysis: resume_analysis.ResumeAnalysisNode,
     NodeModelTypes.SummarizerNode: summarizer.SummarizerNode,
@@ -46,7 +45,6 @@ NodeTypeClassMappings = {
     NodeModelTypes.CompanyEnrichmentNode: company_enrichment.CompanyEnrichmentNode,
     NodeModelTypes.SheetWriterNode: sheet_writer.SheetWriterNode,
     NodeModelTypes.ScoringNode: scoring.ScoringNode,
-    NodeModelTypes.YouTubeCommentsRetriever: yt_comments.YouTubeCommentsRetriever,
     NodeModelTypes.ExtractorNode: extractor.ExtractorNode,
     NodeModelTypes.HumanApprovalNode: human_approval.HumanApproval,
     NodeModelTypes.FilterNode: filter.FilterNode,
