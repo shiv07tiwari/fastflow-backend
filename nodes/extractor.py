@@ -32,11 +32,22 @@ class ExtractorNode(BaseNode):
         if not isinstance(input_text, list):
             input_text = [input_text]
 
+        BASE_PROMPT = """
+        Your task is to extract information from the given text.
+        {text}
+        
+        The following prompt contains information about what is to be extracted
+        {prompt}
+        
+        Output Format:
+        - If you find multiple pieces of information, return a list of dictionaries, with key value pairs
+        - If you find a single information, return a single dictionary with key value pairs
+        """
         service = GeminiService()
         extracted_text = []
 
         for text in input_text:
-            formatted_prompt = prompt.format(text=text)
+            formatted_prompt = BASE_PROMPT.format(prompt=prompt,text=text)
             promise = service.generate_cached_response(formatted_prompt, name=self.name, stream=False)
             extracted_text.append(promise)
 

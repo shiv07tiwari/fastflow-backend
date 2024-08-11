@@ -9,7 +9,7 @@ class GeminiNode(BaseNode):
             super().__init__(**kwargs)
         else:
             inputs = [
-                BaseNodeInput("prompt", InputType.INTERNAL_ONLY, "text", is_required=True),
+                BaseNodeInput("prompt", InputType.INTERNAL_ONLY, "prompt", is_required=True),
                 BaseNodeInput("input_1", InputType.COMMON, "text"),
                 BaseNodeInput("input_2", InputType.COMMON, "text"),
                 BaseNodeInput("input_3", InputType.EXTERNAL_ONLY, "text"),
@@ -57,9 +57,9 @@ class GeminiNode(BaseNode):
                 print(f"Error in executing node {self.name}: {e}")
                 raise e
             response.append(str(llm_response))
-        return {
-            "response": response
-        }
+        return [{
+            "response": res
+        } for res in response ]
 
     def can_execute(self, inputs: dict) -> bool:
         for input_key in [id for id in self.inputs]:

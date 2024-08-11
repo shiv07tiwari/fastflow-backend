@@ -8,7 +8,6 @@ class Fixtures:
 
     def add_test_data(self, n: int = 1):
         existing_nodes = [node.get("id") for node in self.db_controller.list(Tables.Node)]
-        self.db_controller.clear_table(Tables.Node)
         new_nodes = NodeTypeClassMappings.keys()
         for node in new_nodes:
             if node not in existing_nodes:

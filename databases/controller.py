@@ -79,6 +79,15 @@ class DatabaseController:
             print(f"Error downloading file: {e}")
             raise Exception("Failed to download file from Firebase Storage")
 
+    def download_file(self, file_path: str, destination: str) -> str:
+        try:
+            blob = self.bucket.blob(file_path)
+            blob.download_to_filename(destination)
+            return destination
+        except Exception as e:
+            print(f"Error downloading file: {e}")
+            raise Exception("Failed to download file from Firebase Storage")
+
     def upload_to_firebase(self, file_path):
         try:
             blob = self.bucket.blob(file_path)

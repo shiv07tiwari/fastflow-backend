@@ -15,6 +15,11 @@ class NodeModelTypes:
     ScoringNode = 'scoring'
     GeminiRAG = 'gemini_rag'
     ExtractorNode = 'extractor'
+    GeminiImageNode = 'gemini_image'
+
+    # Google
+    GoogleSheetWriterNode = 'google_sheet_writer'
+    EmailDraftNode = 'email_draft'
 
     # Data Processing
     FilterNode = 'filter'
@@ -22,6 +27,7 @@ class NodeModelTypes:
     # File processing
     SheetWriterNode = 'sheet_writer'
     ScoringNode = 'scoring'
+    InvoiceProcessorNode = 'invoice_processor'
 
     # Conditionals
     HumanApprovalNode = 'human_approval'

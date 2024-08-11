@@ -1,7 +1,9 @@
+import base64
 import io
 import zipfile
 from nodes.base_node import BaseNode, BaseNodeInput, InputType
 from services.file_reader import extract_data_from_csv, extract_text_from_pdf
+from PIL import Image
 
 
 class ZipReaderNode(BaseNode):
@@ -25,6 +27,33 @@ class ZipReaderNode(BaseNode):
                 **kwargs
             )
 
+    def _process_image(self, image_bytes, file_name):
+        try:
+            # Determine the image format from the file extension
+            format = file_name.split('.')[-1].upper()
+            if format == 'JPG':
+                format = 'JPEG'  # PIL uses 'JPEG' instead of 'JPG'
+
+            # Open the image with PIL, specifying the format
+            image = Image.open(io.BytesIO(image_bytes), formats=[format])
+
+            # Convert to RGB if the image is in RGBA mode (for PNGs with transparency)
+            if image.mode == 'RGBA':
+                image = image.convert('RGB')
+
+            # Save the image to a BytesIO object
+            buffered = io.BytesIO()
+            image.save(buffered, format="JPEG")  # Save as JPEG for consistency and smaller file size
+
+            # Encode the image as base64
+            img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+            # Return the base64 string with the appropriate data URI prefix
+            return f"data:image/jpeg;base64,{img_str}"
+        except Exception as e:
+            print(f"Error processing image {file_name}: {str(e)}")
+            return None
+
     def _process_zip_file(self, file, file_name) -> str | None:
         try:
             file_bytes = file.read()
@@ -34,6 +63,8 @@ class ZipReaderNode(BaseNode):
                 return file_bytes.decode()
             elif file_name.endswith('.pdf'):
                 return extract_text_from_pdf(file_bytes)
+            elif file_name.lower().endswith(('.png', '.jpg', '.jpeg')):
+                return self._process_image(file_bytes, file_name)
             else:
                 print(f"Unsupported file type for {file_name}")
                 return None

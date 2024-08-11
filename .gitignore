@@ -6,3 +6,5 @@ __pycache__/
 .python-version
 
 fastflow-81dd7-firebase-adminsdk-axtmm-0bafe931d1.json
+
+client_secrets.json
