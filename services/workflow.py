@@ -158,7 +158,7 @@ class WorkflowExecutorService:
         """
         input_edges = [edge for edge in self.input_edges if edge['target'] == node_id]
         for edge in input_edges:
-            handle_key = f"{edge["inputHandle"]}-{edge["outputHandle"]}"
+            handle_key = f"{edge['inputHandle']}-{edge['outputHandle']}"
             if handle_key not in visited:
                 return False
         return True
