@@ -20,4 +20,11 @@ class WorkflowRepository:
         workflow.edges = format_input_edges(workflow.edges)
         self.db_controller.insert(self.table, workflow.dict(), workflow.id)
 
+    def fetch_all(self):
+        workflows_data = self.db_controller.list(self.table)
+        workflows = []
+        for workflow in workflows_data:
+            workflows.append(WorkflowSchema(**workflow))
+        return workflows
+
 

@@ -11,6 +11,7 @@ class Tables:
     WorkFlowNode = "workflow_node"
     Node = "node"
     WorkflowRun = "workflow_run"
+    GoogleUser = "google_user"
 
 
 class QueryOperations:
