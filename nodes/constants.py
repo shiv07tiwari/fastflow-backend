@@ -9,6 +9,11 @@ class NodeModelTypes:
     ZipReaderNode = 'zip_reader'
     RedditBotNode = 'reddit_bot'
     CompanyEnrichmentNode = 'company_enrichment'
+    YouTubeCommentsRetriever = 'yt_comments'
+    # File processing
+    SheetWriterNode = 'sheet_writer'
+    ScoringNode = 'scoring'
+    GeminiRAG = 'gemini_rag'
     ExtractorNode = 'extractor'
     GeminiImageNode = 'gemini_image'
 

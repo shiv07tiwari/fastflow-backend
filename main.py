@@ -110,6 +110,7 @@ async def update_workflow(request: WorkflowResponseDTO):
 Fixtures().add_test_data(1)
 
 
+
 @app.get("/base-nodes")
 async def get_base_nodes():
     nodes = NodeRepository().fetch_all()
