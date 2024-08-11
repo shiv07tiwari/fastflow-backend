@@ -228,6 +228,7 @@ class WorkflowExecutorService:
                 try:
                     await self.execute_node(target_node_id, visited, target_node.available_inputs)
                 except Exception as e:
+                    print(f"Error executing node {target_node.get_node().name} {e}")
                     await self.workflow_service.mark_workflow_run_failed(self.run)
                     raise e
             else:

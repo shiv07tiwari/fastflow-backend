@@ -14,6 +14,7 @@ class NodeModelTypes:
 
     # Google
     GoogleSheetWriterNode = 'google_sheet_writer'
+    GoogleSheetReaderNode = 'google_sheet_reader'
     EmailDraftNode = 'email_draft'
 
     # Data Processing
@@ -26,3 +27,6 @@ class NodeModelTypes:
 
     # Conditionals
     HumanApprovalNode = 'human_approval'
+
+    # Star
+    DataAnalysisNode = 'data_analysis'

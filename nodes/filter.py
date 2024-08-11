@@ -57,7 +57,7 @@ class FilterNode(BaseNode):
         output_instructions = input.get("output_instructions")
 
         prompt = FILTER_PROMPT.format(data=data, condition=condition, output_instructions=output_instructions)
-        res = await gemini_service.generate_cached_json_response(prompt, "filter", stream=False)
+        res = await gemini_service.generate_cached_json_response(prompt, "filter", stream=False, img=False)
         return [
             {
                 "filtered_data": i

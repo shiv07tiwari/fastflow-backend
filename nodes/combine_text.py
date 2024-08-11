@@ -30,6 +30,7 @@ class CombineTextNode(BaseNode):
         self.total_inputs_to_combine = kwargs.get("total_inputs_to_combine", 2)
 
     async def execute(self, input: dict) -> []:
+
         input_text_1 = input.get("input_text_1")
         input_text_2 = input.get("input_text_2")
         input_text_3 = input.get("input_text_3")
@@ -46,9 +47,9 @@ class CombineTextNode(BaseNode):
         combined_text = []
         max_length = max(len(input_text_1), len(input_text_2), len(input_text_3))
         for i in range(max_length):
-            text1 = input_text_1[i] if i < len(input_text_1) else ''
-            text2 = input_text_2[i] if i < len(input_text_2) else ''
-            text3 = input_text_3[i] if i < len(input_text_3) else ''
+            text1 = str(input_text_1[i]) if i < len(input_text_1) else ''
+            text2 = str(input_text_2[i]) if i < len(input_text_2) else ''
+            text3 = str(input_text_3[i]) if i < len(input_text_3) else ''
             combined_text.append(base_input.format(text1=text1, text2=text2, text3=text3))
 
         return [

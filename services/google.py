@@ -151,15 +151,17 @@ class GoogleService:
 
     def sanitize_header(self, value):
         """Remove any newline or carriage return characters from the header value."""
+        if not value:
+            return value
         return value.replace('\n', ' ').replace('\r', ' ')
 
     async def draft_email(self, content, to_email, from_email, subject):
         try:
             message = EmailMessage()
             message.set_content(content)
-            message["To"] = self.sanitize_header(to_email)
-            message["From"] = self.sanitize_header(from_email)
-            message["Subject"] = self.sanitize_header(subject)
+            message["To"] = self.sanitize_header(to_email) or ''
+            message["From"] = self.sanitize_header(from_email) or ''
+            message["Subject"] = self.sanitize_header(subject) or ''
             encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
             create_message = {"message": {"raw": encoded_message}}
             draft = (
@@ -173,4 +175,13 @@ class GoogleService:
             return draft
         except Exception as e:
             print("Error in sending email: ", e)
+            raise e
+
+    async def read_data_from_sheet(self, spreadsheet_id):
+        try:
+            sheet = self.sheets_service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range="A1:D100").execute()
+            rows = sheet.get("values", [])
+            return rows
+        except Exception as e:
+            print("Error in reading data from sheet: ", e)
             raise e

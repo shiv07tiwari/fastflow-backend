@@ -112,7 +112,7 @@ class ResumeAnalysisNode(BaseNode):
         gemini_service = GeminiService()
         formatted_prompt = EXTRACTOR_PROMPT.format(resume=file_content, instructions=instructions)
         extracted_information = await gemini_service.generate_cached_json_response(formatted_prompt, name="resume_analysis",
-                                                                              stream=False)
+                                                                              stream=False, img=False)
 
         name = extracted_information.get("name") or 'Not Available'
         current_employer = extracted_information.get("current_employer") or 'Not Available'

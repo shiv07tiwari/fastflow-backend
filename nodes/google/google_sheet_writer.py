@@ -23,7 +23,7 @@ class GoogleSheetWriterNode(BaseNode):
                 description="Write data to a Google Sheet",
                 node_type="ACTION",
                 inputs=inputs,
-                outputs=["sheet_url"],
+                outputs=["sheet_url", "column_1", "column_2", "column_3", "column_4"],
             )
 
     async def execute(self, input: dict) -> []:
@@ -54,6 +54,10 @@ class GoogleSheetWriterNode(BaseNode):
 
         sheet = await service.create_sheet(rows, headers)
 
-        return {
-            "sheet_url": str(sheet.get("url"))
-        }
+        return [{
+            "sheet_url": str(sheet.get("url")),
+            "column_1": ",".join(column_1),
+            "column_2": ",".join(column_2),
+            "column_3": ",".join(column_3),
+            "column_4": ",".join(column_4),
+        }]

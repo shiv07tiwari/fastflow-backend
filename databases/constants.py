@@ -2,7 +2,8 @@ from nodes import combine_text, user_input, gemini, web_scraper, file_reader, re
     reddit_bot, company_enrichment, scoring, extractor, human_approval, filter, gemini_image, invoice_processor
 from nodes.constants import NodeModelTypes
 from nodes.file_processing import sheet_writer
-from nodes.google import google_sheet_writer, email_draft
+from nodes.google import google_sheet_writer, email_draft, google_sheet_reader
+from nodes.star import data_analysis
 
 
 class Tables:
@@ -49,6 +50,8 @@ NodeTypeClassMappings = {
     NodeModelTypes.FilterNode: filter.FilterNode,
     NodeModelTypes.GeminiImageNode: gemini_image.GeminiImageNode,
     NodeModelTypes.GoogleSheetWriterNode: google_sheet_writer.GoogleSheetWriterNode,
+    NodeModelTypes.GoogleSheetReaderNode: google_sheet_reader.GoogleSheetReaderNode,
     NodeModelTypes.InvoiceProcessorNode: invoice_processor.InvoiceProcessorNode,
     NodeModelTypes.EmailDraftNode: email_draft.EmailDraftNode,
+    NodeModelTypes.DataAnalysisNode: data_analysis.DataAnalysisNode
 }

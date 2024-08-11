@@ -15,6 +15,7 @@ class NodeType(Enum):
     FORK = "fork"
     JOIN = "join"
     EXTRACT = "extract"
+    STAR = "star"
 
 
 class InputType(Enum):
