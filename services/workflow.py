@@ -53,7 +53,8 @@ class WorkflowService:
         workflow.id = workflow_id
         workflow.latest_run_id = run_id
 
-        response = await service.generate_cached_response(prompt, 'workflow', False) if workflow.ai_description is None else workflow.ai_description
+        response = await service.generate_cached_response(prompt, 'workflow',
+                                                          False) if workflow.ai_description is None else workflow.ai_description
         workflow.ai_description = response
         if name:
             workflow.name = name
@@ -81,7 +82,8 @@ class WorkflowService:
         workflow.set_edges(edges)
         workflow.set_nodes(nodes)
 
-        response = await service.generate_cached_response(prompt, 'workflow', False) if workflow.ai_description is None else workflow.ai_description
+        response = await service.generate_cached_response(prompt, 'workflow',
+                                                          False) if workflow.ai_description is None else workflow.ai_description
 
         workflow.ai_description = response
         if name:
@@ -157,7 +159,6 @@ class WorkflowService:
         self.workflow_run_repo.add_or_update(run)
 
 
-
 class WorkflowExecutorService:
     workflow_id = WorkflowSchema
     node_mapping: Dict[str, WorkFlowNode] = {}  # Store mapping of node id to node object
@@ -206,7 +207,7 @@ class WorkflowExecutorService:
         """
         input_edges = [edge for edge in self.input_edges if edge['target'] == node_id]
         for edge in input_edges:
-            handle_key = f"{edge["inputHandle"]}-{edge["outputHandle"]}"
+            handle_key = f"{edge['inputHandle']}-{edge['outputHandle']}"
             if handle_key not in visited:
                 return False
         return True
