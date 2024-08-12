@@ -16,9 +16,9 @@ class YouTubeCommentsRetriever(BaseNode):
             ]
             super().__init__(
                 id='yt_comments',
-                name="YouTube Comments Retriever",
+                name="YT Comments",
                 icon_url="https://cdn-icons-png.flaticon.com/512/174/174883.png",
-                description="Scrape comments from YouTube videos",
+                description="Scrape Youtube video comments",
                 node_type=NodeType.AI.value,
                 is_active=True,
                 inputs=inputs,

@@ -8,7 +8,7 @@ class GeminiRAGNode(BaseNode):
             super().__init__(**kwargs)
         else:
             inputs = [
-                BaseNodeInput("prompt", InputType.INTERNAL_ONLY, "text", is_required=True),
+                BaseNodeInput("prompt", InputType.INTERNAL_ONLY, "prompt", is_required=True),
                 BaseNodeInput("input_1", InputType.COMMON, "text"),
             ]
             super().__init__(
