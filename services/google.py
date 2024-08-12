@@ -14,6 +14,7 @@ load_dotenv()
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+OAUTH_CLIENT_SECRETS = os.getenv("OAUTH_CLIENT_SECRETS")
 
 
 def get_urls_for_search_query(company_name, num_results=10):
@@ -34,8 +35,8 @@ def get_urls_for_search_query(company_name, num_results=10):
 
 
 def create_flow():
-    flow = Flow.from_client_secrets_file(
-        'client_secrets.json',  # Path to your OAuth2 credentials
+    flow = Flow.from_client_config(
+        OAUTH_CLIENT_SECRETS,  # Path to your OAuth2 credentials
         scopes=[
             'https://www.googleapis.com/auth/spreadsheets',
             'https://www.googleapis.com/auth/gmail.compose',

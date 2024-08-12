@@ -29,6 +29,8 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", None)
 genai.configure(api_key=GEMINI_API_KEY)
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+OAUTH_CLIENT_SECRETS = os.getenv("OAUTH_CLIENT_SECRETS")
+
 
 origins = [
     "http://localhost",
@@ -254,8 +256,8 @@ class GoogleAuthResponse:
 
 
 def create_flow():
-    flow = Flow.from_client_secrets_file(
-        'client_secrets.json',  # Path to your OAuth2 credentials
+    flow = Flow.from_client_config(
+        json.loads(OAUTH_CLIENT_SECRETS),
         scopes=[
             'https://www.googleapis.com/auth/spreadsheets',
             'https://www.googleapis.com/auth/gmail.compose',
