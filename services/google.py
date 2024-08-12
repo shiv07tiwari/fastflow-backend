@@ -131,7 +131,7 @@ class GoogleService:
                 body=body
             ).execute()
             spreadsheet_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/edit?gid=899975310#gid=899975310"
-            return {"message": "Data appended to sheet", "url": spreadsheet_url}
+            return {"message": "Data appended to sheet", "url": spreadsheet_url, "id": spreadsheet_id}
         except Exception as e:
             print("Failed to append data to the sheet:", e)
             raise

@@ -55,7 +55,7 @@ class GoogleSheetWriterNode(BaseNode):
         sheet = await service.create_sheet(rows, headers)
 
         return [{
-            "sheet_url": str(sheet.get("url")),
+            "sheet_url": str(sheet.get("id")),
             "column_1": ",".join(column_1),
             "column_2": ",".join(column_2),
             "column_3": ",".join(column_3),
