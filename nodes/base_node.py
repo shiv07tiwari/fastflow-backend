@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class NodeType(Enum):
@@ -43,6 +43,8 @@ class BaseNode(BaseModel):
     """
     This is a single node in the workflow. Created by system.
     """
+    model_config = ConfigDict(extra='allow')
+    
     id: str
     name: str
     icon_url: str

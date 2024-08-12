@@ -11,7 +11,8 @@ class NodeModelTypes:
     CompanyEnrichmentNode = 'company_enrichment'
     ExtractorNode = 'extractor'
     GeminiImageNode = 'gemini_image'
-
+    GeminiRAG = 'gemini_rag'
+    YouTubeCommentsRetriever = 'yt_comments'
     # Google
     GoogleSheetWriterNode = 'google_sheet_writer'
     GoogleSheetReaderNode = 'google_sheet_reader'
