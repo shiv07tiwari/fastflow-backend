@@ -36,7 +36,6 @@ The data is as follows:
 
 The criteria is as follows:
 \\
-{domain_criteria}
 {criteria}
 \\
 
@@ -72,14 +71,13 @@ class ScoringNode(BaseNode):
         data = input.get("data")
         criteria = input.get("criteria")
 
-        domain_criteria = DOMAIN_PROMPT_MAP.get("software_hiring", "")
 
         if isinstance(data, str):
             data = [data]
 
         results = []
         for _data in data:
-            prompt = SCORE_PROMPT.format(data=_data, criteria=criteria, domain_criteria=domain_criteria)
+            prompt = SCORE_PROMPT.format(data=_data, criteria=criteria)
             results.append(gemini_service.generate_cached_json_response(prompt, name="scoring", stream=False, img=False))
 
         results = await asyncio.gather(*results)

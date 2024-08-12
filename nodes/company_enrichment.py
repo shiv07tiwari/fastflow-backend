@@ -20,7 +20,8 @@ Output Format:
 Return a JSON object with the following keys:
 - company_name: The name of the company
 - contact_email: The contact email of the company
-- summary: A summary of the company information in markdown format
+- summary: A elaborate and huge summary of the company information in markdown format. Make sure it contains
+all the information that you have available about that company, but in a well human readable format
 - primary_industry: The primary industry of the company
 
 """

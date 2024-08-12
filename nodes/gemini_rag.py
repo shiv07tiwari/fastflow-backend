@@ -1,6 +1,6 @@
 from nodes.base_node import BaseNode, NodeType, BaseNodeInput, InputType
-from nodes.constants import NodeModelTypes
 from services.mem_rag import InMemoryRAG
+
 
 class GeminiRAGNode(BaseNode):
     def __init__(self, **kwargs):
@@ -22,7 +22,6 @@ class GeminiRAGNode(BaseNode):
                 outputs=["response"],
                 **kwargs
             )
-        
 
     async def execute(self, input: dict) -> list:
         prompt = input.get("prompt")
