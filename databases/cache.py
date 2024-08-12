@@ -9,10 +9,12 @@ from redis import asyncio as aioredis
 
 load_dotenv()
 
+
 async def is_redis_available(r):
     try:
         return await r.ping()  # Try pinging the Redis server
-    except (redis.exceptions.ConnectionError, redis.exceptions.BusyLoadingError):
+    except (redis.exceptions.ConnectionError, redis.exceptions.BusyLoadingError) as e:
+        print(f"Error connecting to Redis: {e}")
         return False
 
 
