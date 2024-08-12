@@ -220,7 +220,7 @@ class WorkflowExecutorService:
         :param input_data: Input data for the node [mostly coming from parent node]
         """
 
-        if node_id not in visited and self.is_human_approval_required is False:
+        if node_id not in visited:
             # Get the current node
             node: WorkFlowNode = self.node_mapping[node_id]
             base_node = node.get_node()

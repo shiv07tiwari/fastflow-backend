@@ -1,4 +1,4 @@
-from databases.constants import Tables
+from databases.constants import Tables, QueryConstants
 from databases.controller import DatabaseController
 from databases.models.workflow_schema import WorkflowSchema
 from services.utils import format_input_edges
@@ -20,8 +20,8 @@ class WorkflowRepository:
         workflow.edges = format_input_edges(workflow.edges)
         self.db_controller.insert(self.table, workflow.dict(), workflow.id)
 
-    def fetch_all(self):
-        workflows_data = self.db_controller.list(self.table)
+    def fetch_all(self, owner: str):
+        workflows_data = self.db_controller.query_equal(self.table, QueryConstants.Owner,  owner)
         workflows = []
         for workflow in workflows_data:
             workflows.append(WorkflowSchema(**workflow))

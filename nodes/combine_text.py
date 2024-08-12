@@ -14,7 +14,7 @@ class CombineTextNode(BaseNode):
                 BaseNodeInput("input_text_1", InputType.COMMON, "text", is_required=True),
                 BaseNodeInput("input_text_2", InputType.COMMON, "text"),
                 BaseNodeInput("input_text_3", InputType.COMMON, "text"),
-                BaseNodeInput("base_input", InputType.INTERNAL_ONLY, "text"),
+                BaseNodeInput("base_input", InputType.INTERNAL_ONLY, "prompt"),
             ]
             super().__init__(
                 id='combine_text',

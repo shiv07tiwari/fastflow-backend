@@ -70,13 +70,13 @@ async def run_workflow(request: WorkflowRunRequest):
     return run
 
 
-@app.get("/workflows")
-async def get_workflows():
+@app.get("/workflows/{owner}")
+async def get_workflows(owner: str):
     """
     Get all workflows
     :return:  Response
     """
-    workflows = WorkflowRepository().fetch_all()
+    workflows = WorkflowRepository().fetch_all(owner or 'admin')
     formatted_workflows = []
     for workflow in workflows:
         nodes = WorkflowNodeRepository().fetch_all_by_workflow_id(workflow.id)

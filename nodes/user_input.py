@@ -11,7 +11,7 @@ class UserInputNode(BaseNode):
             super().__init__(**kwargs)
         else:
             inputs = [
-                BaseNodeInput("input", InputType.COMMON, "large-text", is_required=True),
+                BaseNodeInput("input", InputType.COMMON, "prompt", is_required=True),
             ]
             super().__init__(
                 id='user_input',

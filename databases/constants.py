@@ -31,6 +31,7 @@ class QueryConstants:
     Node = "node"
     Workflow = "workflow"
     Id = "id"
+    Owner = "owner"
 
 
 NodeTypeClassMappings = {
