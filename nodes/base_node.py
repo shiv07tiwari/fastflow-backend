@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class NodeType(Enum):
@@ -15,6 +15,7 @@ class NodeType(Enum):
     FORK = "fork"
     JOIN = "join"
     EXTRACT = "extract"
+    STAR = "star"
 
 
 class InputType(Enum):
@@ -42,8 +43,6 @@ class BaseNode(BaseModel):
     """
     This is a single node in the workflow. Created by system.
     """
-    model_config = ConfigDict(extra='allow')
-
     id: str
     name: str
     icon_url: str

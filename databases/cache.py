@@ -1,10 +1,13 @@
 import functools
+import os
 from hashlib import sha256
 import asyncio
+from dotenv import load_dotenv
 
 import redis
 from redis import asyncio as aioredis
 
+load_dotenv()
 
 async def is_redis_available(r):
     try:
@@ -16,14 +19,14 @@ async def is_redis_available(r):
 try:
     # Initialize Redis client
     async_redis_client = aioredis.Redis(
-        host='localhost',
-        port=6379,
+        host=os.getenv("REDIS_HOST", 'localhost'),
+        port=os.getenv("REDIS_PORT", 6379),
         db=0,
         decode_responses=True  # Automatically decoding responses to Python strings
     )
     sync_redis_client = redis.Redis(
-        host='localhost',
-        port=6379,
+        host=os.getenv("REDIS_HOST", 'localhost'),
+        port=os.getenv("REDIS_PORT", 6379),
         db=0,
         decode_responses=True  # Automatically decoding responses to Python strings
     )

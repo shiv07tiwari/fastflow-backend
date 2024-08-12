@@ -1,3 +1,5 @@
+import uuid
+
 from databases.repository.workflow import WorkflowRepository
 from databases.repository.workflow_node import WorkflowNodeRepository
 from databases.repository.workflow_run import WorkflowRunRepository
@@ -7,6 +9,7 @@ from typing import Dict, List
 
 from databases.models.workflow_schema import WorkflowSchema
 from databases.models.workflow_node import WorkFlowNode
+from services import GeminiService
 
 
 # class Edge:
@@ -28,23 +31,70 @@ class WorkflowService:
         pass
 
     async def update_workflow_post_execution(self, workflow_id, nodes: List[str], edges, run_id: str, name=None):
+        service = GeminiService()
+        prompt = """
+        You are given the data about a workflow. It is basically a graph of noded connected to each other using edges.
+        Each node can have multiple input and output edges and can have multiple inputs and outputs.
+        
+        Workflow Name: {name}
+        
+        Workflow Nodes: {nodes}
+        
+        Workflow Edges: {edges}
+        
+        Your job is to write a 2 line summary of the workflow.
+        The summary should explain to the user in a very simple way what the workflow does.
+        Try to be witty in unique ways, but do not force the joke. Dont do the cliche its like templates.
+        """
+        prompt = prompt.format(name=name, nodes=str(nodes), edges=str(edges))
         workflow = self.workflow_repo.fetch_by_id(workflow_id)
         workflow.set_edges(edges)
         workflow.set_nodes(nodes)
         workflow.id = workflow_id
         workflow.latest_run_id = run_id
+
+        response = await service.generate_cached_response(prompt, 'workflow',
+                                                          False) if workflow.ai_description is None else workflow.ai_description
+        workflow.ai_description = response
         if name:
             workflow.name = name
         self.workflow_repo.add_or_update(workflow)
 
     async def update_workflow(self, workflow_id, nodes: List[str], edges, name=None):
+        service = GeminiService()
+        prompt = """
+                You are given the data about a workflow. It is basically a graph of noded connected to each other using edges.
+                Each node can have multiple input and output edges and can have multiple inputs and outputs.
+
+                Workflow Name: {name}
+
+                Workflow Nodes: {nodes}
+
+                Workflow Edges: {edges}
+
+                Your job is to write a 2 line summary of the workflow.
+                The summary should explain to the user in a very simple way what the workflow does.
+                Try to be witty in unique ways, but do not force the joke. Dont do the cliche its like templates.
+                """
+        prompt = prompt.format(name=name, nodes=str(nodes), edges=str(edges))
         workflow = self.workflow_repo.fetch_by_id(workflow_id)
         workflow.name = name
         workflow.set_edges(edges)
         workflow.set_nodes(nodes)
+
+        response = await service.generate_cached_response(prompt, 'workflow',
+                                                          False) if workflow.ai_description is None else workflow.ai_description
+
+        workflow.ai_description = response
         if name:
             workflow.name = name
         self.workflow_repo.add_or_update(workflow)
+
+    async def create_workflow(self, name, description, owner):
+        id = uuid.uuid4().hex
+        workflow = WorkflowSchema(id=id, name=name, description=description, owner=owner)
+        self.workflow_repo.add_or_update(workflow)
+        return id
 
     async def fetch_workflow_node_by_id(self, node_id) -> WorkFlowNode:
         return self.workflow_node_repo.fetch_by_id(node_id)
@@ -109,7 +159,6 @@ class WorkflowService:
         self.workflow_run_repo.add_or_update(run)
 
 
-
 class WorkflowExecutorService:
     workflow_id = WorkflowSchema
     node_mapping: Dict[str, WorkFlowNode] = {}  # Store mapping of node id to node object
@@ -171,7 +220,7 @@ class WorkflowExecutorService:
         :param input_data: Input data for the node [mostly coming from parent node]
         """
 
-        if node_id not in visited and self.is_human_approval_required is False:
+        if node_id not in visited:
             # Get the current node
             node: WorkFlowNode = self.node_mapping[node_id]
             base_node = node.get_node()
@@ -228,6 +277,7 @@ class WorkflowExecutorService:
                 try:
                     await self.execute_node(target_node_id, visited, target_node.available_inputs)
                 except Exception as e:
+                    print(f"Error executing node {target_node.get_node().name} {e}")
                     await self.workflow_service.mark_workflow_run_failed(self.run)
                     raise e
             else:

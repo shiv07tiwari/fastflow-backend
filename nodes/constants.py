@@ -9,16 +9,12 @@ class NodeModelTypes:
     ZipReaderNode = 'zip_reader'
     RedditBotNode = 'reddit_bot'
     CompanyEnrichmentNode = 'company_enrichment'
-    YouTubeCommentsRetriever = 'yt_comments'
-    # File processing
-    SheetWriterNode = 'sheet_writer'
-    ScoringNode = 'scoring'
-    GeminiRAG = 'gemini_rag'
     ExtractorNode = 'extractor'
     GeminiImageNode = 'gemini_image'
 
     # Google
     GoogleSheetWriterNode = 'google_sheet_writer'
+    GoogleSheetReaderNode = 'google_sheet_reader'
     EmailDraftNode = 'email_draft'
 
     # Data Processing
@@ -31,3 +27,6 @@ class NodeModelTypes:
 
     # Conditionals
     HumanApprovalNode = 'human_approval'
+
+    # Star
+    DataAnalysisNode = 'data_analysis'

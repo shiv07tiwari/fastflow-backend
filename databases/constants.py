@@ -1,8 +1,9 @@
 from nodes import combine_text, user_input, gemini, web_scraper, file_reader, resume_analysis, summarizer, zip_reader, \
-    reddit_bot, company_enrichment, scoring, yt_comments, gemini_rag, extractor, human_approval, filter, gemini_image, invoice_processor
+    reddit_bot, company_enrichment, scoring, extractor, human_approval, filter, gemini_image, invoice_processor
 from nodes.constants import NodeModelTypes
 from nodes.file_processing import sheet_writer
-from nodes.google import google_sheet_writer, email_draft
+from nodes.google import google_sheet_writer, email_draft, google_sheet_reader
+from nodes.star import data_analysis
 
 
 class Tables:
@@ -10,6 +11,7 @@ class Tables:
     WorkFlowNode = "workflow_node"
     Node = "node"
     WorkflowRun = "workflow_run"
+    GoogleUser = "google_user"
 
 
 class QueryOperations:
@@ -29,6 +31,7 @@ class QueryConstants:
     Node = "node"
     Workflow = "workflow"
     Id = "id"
+    Owner = "owner"
 
 
 NodeTypeClassMappings = {
@@ -36,7 +39,6 @@ NodeTypeClassMappings = {
     NodeModelTypes.UserInput: user_input.UserInputNode,
     NodeModelTypes.WebScraper: web_scraper.WebScraperNode,
     NodeModelTypes.Gemini: gemini.GeminiNode,
-    NodeModelTypes.GeminiRAG: gemini_rag.GeminiRAGNode,
     NodeModelTypes.FileReader: file_reader.FileReader,
     NodeModelTypes.ResumeAnalysis: resume_analysis.ResumeAnalysisNode,
     NodeModelTypes.SummarizerNode: summarizer.SummarizerNode,
@@ -45,12 +47,13 @@ NodeTypeClassMappings = {
     NodeModelTypes.CompanyEnrichmentNode: company_enrichment.CompanyEnrichmentNode,
     NodeModelTypes.SheetWriterNode: sheet_writer.SheetWriterNode,
     NodeModelTypes.ScoringNode: scoring.ScoringNode,
-    NodeModelTypes.YouTubeCommentsRetriever: yt_comments.YouTubeCommentsRetriever,
     NodeModelTypes.ExtractorNode: extractor.ExtractorNode,
     NodeModelTypes.HumanApprovalNode: human_approval.HumanApproval,
     NodeModelTypes.FilterNode: filter.FilterNode,
     NodeModelTypes.GeminiImageNode: gemini_image.GeminiImageNode,
     NodeModelTypes.GoogleSheetWriterNode: google_sheet_writer.GoogleSheetWriterNode,
+    NodeModelTypes.GoogleSheetReaderNode: google_sheet_reader.GoogleSheetReaderNode,
     NodeModelTypes.InvoiceProcessorNode: invoice_processor.InvoiceProcessorNode,
     NodeModelTypes.EmailDraftNode: email_draft.EmailDraftNode,
+    NodeModelTypes.DataAnalysisNode: data_analysis.DataAnalysisNode
 }
