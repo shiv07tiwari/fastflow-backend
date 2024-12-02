@@ -9,3 +9,5 @@ __pycache__/
 fastflow-81dd7-firebase-adminsdk-axtmm-0bafe931d1.json
 
 client_secrets.json
+
+venv/

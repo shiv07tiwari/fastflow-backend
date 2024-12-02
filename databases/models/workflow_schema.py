@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List, Optional, Dict
 from pydantic import BaseModel
 
@@ -8,8 +10,8 @@ class WorkflowSchema(BaseModel):
     name: str | None = None
     description: Optional[str] = None
     owner: str | None = None
-    nodes: List[str] = []  # Store individual nodes
-    edges: List[Dict[str, str]] = []  # Store edges (source, target, sourceHandle)
+    nodes: List[str]  # Store individual nodes
+    edges: List[Dict[str, str]]  # Store edges (source, target, sourceHandle)
     latest_run_id: str | None = None
     ai_description: str | None = None
 

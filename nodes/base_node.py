@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from enum import Enum
-from typing import List
+from typing import List, Union
 
 from pydantic import BaseModel, ConfigDict
 
@@ -31,7 +33,7 @@ class BaseNodeInput(BaseModel):
     input_type: str  # What type of UI input is this (text, dropdown, etc)
     is_required: bool
 
-    def __init__(self, key: str, handle_type: InputType | str, input_type: str, is_required: bool = False):
+    def __init__(self, key: str, handle_type: Union[InputType, str], input_type: str, is_required: bool = False):
         handle_type = handle_type if isinstance(handle_type, str) else handle_type.value
         super().__init__(key=key, handle_type=handle_type, input_type=input_type, is_required=is_required)
 
@@ -53,8 +55,8 @@ class BaseNode(BaseModel):
     updated_at: str | None = None
     is_active: bool = True
     node_type: str
-    inputs: List[BaseNodeInput] = []
-    outputs: List[str] = []
+    inputs: List[BaseNodeInput]
+    outputs: List[str]
 
     def execute(self, *args, **kwargs):
         raise NotImplementedError()
