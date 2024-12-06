@@ -5,7 +5,7 @@ from databases.repository.workflow_node import WorkflowNodeRepository
 from databases.repository.workflow_run import WorkflowRunRepository
 from databases.models.workflow_run import WorkflowRun
 import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from databases.models.workflow_schema import WorkflowSchema
 from databases.models.workflow_node import WorkFlowNode
@@ -212,7 +212,7 @@ class WorkflowExecutorService:
                 return False
         return True
 
-    async def execute_node(self, node_id: str, visited: set, input_data: dict | None = None):
+    async def execute_node(self, node_id: str, visited: set, input_data: Optional[dict] = None):
         """
         Execute a node and recursively execute its neighbors when all the inputs are available
         :param node_id: Node ID
@@ -283,7 +283,7 @@ class WorkflowExecutorService:
             else:
                 print(f"not now: {target_node.get_node().name}")
 
-    async def execute(self, nodes: list, edges: list, run_id: str, orign_node_id: str | None) -> WorkflowRun:
+    async def execute(self, nodes: list, edges: list, run_id: str, orign_node_id: Optional[str]) -> WorkflowRun:
         """
         DFS traversal of the workflow graph
         @param nodes: List of nodes from frontend.

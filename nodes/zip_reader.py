@@ -3,6 +3,8 @@ from __future__ import annotations
 import base64
 import io
 import zipfile
+from typing import Optional
+
 from nodes.base_node import BaseNode, BaseNodeInput, InputType
 from services.file_reader import extract_data_from_csv, extract_text_from_pdf
 from PIL import Image
@@ -56,7 +58,7 @@ class ZipReaderNode(BaseNode):
             print(f"Error processing image {file_name}: {str(e)}")
             return None
 
-    def _process_zip_file(self, file, file_name) -> str | None:
+    def _process_zip_file(self, file, file_name) -> Optional[str]:
         try:
             file_bytes = file.read()
             if file_name.endswith('.csv'):

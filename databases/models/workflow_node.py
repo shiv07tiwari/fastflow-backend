@@ -1,24 +1,24 @@
-from typing import List
+from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from databases.repository.node import NodeRepository
 from nodes.base_node import BaseNodeInput
 
 
 class WorkFlowNode(BaseModel):
-    id: str | None = None
+    id: Optional[str] = None
     name: str = "Node"
     node: str = None
-    workflow: str | None = None
-    available_inputs: dict | None = {}
-    outputs: List[dict] | None = {}
-    output_handles: List[str] | None = []
+    workflow: Optional[str] = None
+    available_inputs: Optional[dict] = Field(default={})
+    outputs: Optional[dict] = Field(default={})
+    output_handles: Optional[List[str]] = Field(default=[])
     is_deleted: bool = False
     external_inputs: List[BaseNodeInput]
     internal_inputs: List[BaseNodeInput]
     common_inputs: List[BaseNodeInput]
-    position: dict | None = {}
+    position: Optional[dict] = Field(default={})
 
     def to_dict(self) -> dict:
         return self.__dict__

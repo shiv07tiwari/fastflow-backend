@@ -1,17 +1,17 @@
-from typing import List, Dict
-from pydantic import BaseModel
+from typing import List, Dict, Optional
+from pydantic import BaseModel, Field
 
 
 class WorkflowRun(BaseModel):
     id: str
     workflow_id: str
     num_nodes: int
-    nodes: List = []
-    edges: List[Dict[str, str]] = []
-    started_at: float | None = None
-    executed_at: float | None = None
+    nodes: List = Field(default=[])
+    edges: List[Dict[str, str]] = Field(default=[])
+    started_at: Optional[float] = Field(default=None)
+    executed_at: Optional[float] = Field(default=None)
     status: str = "RUNNING"
-    approve_node: str | None = None
+    approve_node: Optional[str] = Field(default=None)
 
     def to_dict(self):
         return self.__dict__

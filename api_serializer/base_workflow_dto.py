@@ -12,31 +12,31 @@ from pydantic import BaseModel
 
 class WorkflowRunRequest(BaseModel):
     id: str
-    nodes: list | None = None
-    edges: list | None = None
+    nodes: Optional[list] = None
+    edges: Optional[list] = None
     run_id: str
-    node_id: str | None = None
-    approved_node: str | None = None
+    node_id: Optional[str] = None
+    approved_node: Optional[str] = None
 
 
 @dataclass
 class WorkflowResponseDTO:
-    id: str | None = None
-    name: str | None = None
-    nodes: List[WorkFlowNode] | None = None
-    edges: List[Dict[str, str]] | None = None
-    owner: str | None = None
+    id: Optional[str] = None
+    name: Optional[str] = None
+    nodes: Optional[List[WorkFlowNode]] = None
+    edges: Optional[List[Dict[str, str]]] = None
+    owner: Optional[str] = None
     description: Optional[str] = None
     output_handles: Optional[List[str]] = None
     variables: Optional[List[Dict[str, str]]] = None
     latest_run_data: Optional[Dict[str, str]] = None
-    ai_description: str | None = None
+    ai_description: Optional[str] = None
 
     def to_dict(self) -> dict:
         return self.__dict__
 
     @staticmethod
-    def to_response(workflow: WorkflowSchema, nodes: List[WorkFlowNode], run: WorkflowRun | None):
+    def to_response(workflow: WorkflowSchema, nodes: List[WorkFlowNode], run: Optional[WorkflowRun]):
         """
         Nodes is passed as a parameter because the whole object is not a part of the WorkflowSchema
         """
