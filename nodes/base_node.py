@@ -51,8 +51,8 @@ class BaseNode(BaseModel):
     name: str
     icon_url: str
     description: str
-    created_at: str | None = None
-    updated_at: str | None = None
+    created_at: Union[None, str] = None
+    updated_at: Union[None, str] = None
     is_active: bool = True
     node_type: str
     inputs: List[BaseNodeInput]
