@@ -1,5 +1,6 @@
 import asyncio
 import time
+from typing import Union
 
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightAsyncTimeoutError
 from databases.cache import cache_response
@@ -42,7 +43,7 @@ async def _smart_scroll(page, timeout):
 
 
 @cache_response()
-async def scrape_website_content(url: str, timeout=30000) -> str | None:
+async def scrape_website_content(url: str, timeout=30000) -> Union[str,None]:
     if not url or not url.startswith("http"):
         print(f"Invalid URL for scrapping: {url}")
         return None
